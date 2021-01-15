@@ -1,0 +1,34 @@
+{
+    "env": {
+        "browser": true,
+        "es6": true,
+        "node": true
+    },
+    "extends": [
+        "eslint:recommended", 
+        "plugin:@typescript-eslint/all",
+        "prettier",
+        "prettier/@typescript-eslint",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "project": "tsconfig.json",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "eslint-plugin-unicorn",
+        "eslint-plugin-prefer-arrow",
+        "eslint-plugin-import",
+        "eslint-plugin-no-null",
+        "eslint-plugin-jsdoc",
+        "@typescript-eslint/eslint-plugin"
+    ],
+    "rules": {
+        "@typescript-eslint/no-type-alias": "off",
+        "@typescript-eslint/no-parameter-properties": "off",
+        "@typescript-eslint/no-magic-numbers": "off",
+        "@typescript-eslint/prefer-readonly-parameter-types": "off",
+        "@typescript-eslint/no-inferrable-types": "off"
+    }
+}
