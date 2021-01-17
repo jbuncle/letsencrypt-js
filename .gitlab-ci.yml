@@ -1,31 +1,25 @@
 
 stages:
     - build
-    - pack
     - deploy
-    
+
 cache:
   paths:
     - node_modules/
 
-build:
+image: cyberpearuk/node-build-docker
+
+build-and-tag:
     stage: build
-    image: cyberpearuk/node-build-docker
     script:
         - npm install
         - npm run build
-
-tag:
-    stage: deploy
-    image: docker.jbuncle.co.uk/jbuncle/npm-tagger-docker
-    script:
-     - tag
+        - git-tag
     only:
-        refs:
-            - master
+        - master
 
 pack:
-    stage: pack
+    stage: build
     image: cyberpearuk/node-build-docker
     script:
         - npm install
@@ -46,3 +40,5 @@ publish:
         - npm publish $RELEASE --registry https://nexus.jbuncle.co.uk/repository/npm-private/
     only:
         - tags
+    dependencies: 
+        - pack
