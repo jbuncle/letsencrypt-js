@@ -51,17 +51,18 @@ export class CertMonitor implements CertMonitorI {
 
     public set(newDomainSet: Record<string, string>): void {
 
-        // Remove domains not in given set
-        const oldDomainsSet: Record<string, string> = this.domains;
-        const removals: string[] = this.keyDifference(oldDomainsSet, newDomainSet);
+        const removals: string[] = this.keyDifference(this.domains, newDomainSet);
+        const additions: string[] = this.keyDifference(newDomainSet, this.domains);
+
+        // Remove domains
         this.remove(removals);
 
-        // Update records
+        // Update with all records (overwrite any changed emails)
         this.forObject(newDomainSet, (key: string, value: string) => {
             this.domains[key] = value;
         });
 
-        this.notifyAddition(Object.keys(newDomainSet));
+        this.notifyAddition(additions);
     }
 
     public add(names: string[], accountEmail: string): void {
