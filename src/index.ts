@@ -2,10 +2,11 @@
  * @copyright 2021 James Buncle <jbuncle@hotmail.com>
  */
 
-export * as Acme from "./Acme";
+export * as HandlerFactories from "./HandlerFactories";
 
-export { ChallengeHandlerI as AcmeChallengeHandlerI } from "./Acme/ChallengeHandlerI";
-
+export { AuthorizationI } from "./AuthorizationI";
 export { CertMonitorFactory } from "./CertMonitorFactory";
 export { CertMonitorFactoryI } from "./CertMonitorFactoryI";
 export { CertMonitorI } from "./CertMonitorI";
+export { ChallengeHandlerI } from "./ChallengeHandlerI";
+export { ChallengeI } from "./ChallengeI";

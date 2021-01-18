@@ -1,7 +1,7 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
-import { CloudFlareApi as CloudflareApi } from "../../CloudflareApi/CloudflareApi";
+import { CloudFlareApi as CloudflareApi } from "../CloudflareApi/CloudflareApi";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
-import { CloudflareDnsChallengeHandler } from "../Handlers/CloudflareDnsChallengeHandler";
+import { CloudflareDnsChallengeHandler } from "../Acme/Handlers/CloudflareDnsChallengeHandler";
 
 export class CloudflareDnsChallengeHandlerFactory {
 

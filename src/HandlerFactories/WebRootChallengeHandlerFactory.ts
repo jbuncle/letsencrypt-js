@@ -1,6 +1,6 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
-import { WebRootChallengeHandler } from "../Handlers/WebRootChallengeHandler";
+import { WebRootChallengeHandler } from "../Acme/Handlers/WebRootChallengeHandler";
 
 export class WebRootChallengeHandlerFactory {
 

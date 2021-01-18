@@ -1,9 +1,9 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
 import type { DNSRecordI } from "../../DNS/DNSRecordI";
 import { RecordType } from "../../DNS/RecordType";
-import type { ChallengeHandlerI } from "../ChallengeHandlerI";
-import type { ChallengeI } from "../ChallengeI";
-import type { AuthorizationI } from "../AuthorizationI";
+import type { ChallengeHandlerI } from "../../ChallengeHandlerI";
+import type { ChallengeI } from "../../ChallengeI";
+import type { AuthorizationI } from "../../AuthorizationI";
 
 export abstract class AbstractDnsChallengeHandler implements ChallengeHandlerI {
 

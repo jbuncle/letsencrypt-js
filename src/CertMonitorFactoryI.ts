@@ -1,10 +1,10 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
-import type { AcmeChallengeHandlerI, CertMonitorI } from ".";
+import type { ChallengeHandlerI, CertMonitorI } from ".";
 
 export interface CertMonitorFactoryI {
     createCertMonitor: (
         logger: LoggerInterface,
-        handlers: AcmeChallengeHandlerI[],
+        handlers: ChallengeHandlerI[],
         certFilePathFormat: string,
         keyFilePathFormat: string,
         expiryThesholdDays?: number

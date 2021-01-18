@@ -38,7 +38,7 @@ export class CertMonitor implements CertMonitorI {
             return new TaskBatching().run(this.createTasks(), 5)
         }, ms);
 
-       await this.intervalTimeout.run();
+        await this.intervalTimeout.run();
     }
 
     public stop(): void {
@@ -49,16 +49,26 @@ export class CertMonitor implements CertMonitorI {
         this.intervalTimeout = undefined;
     }
 
+    public set(newDomainSet: Record<string, string>): void {
+
+        // Remove domains not in given set
+        const oldDomainsSet: Record<string, string> = this.domains;
+        const removals: string[] = this.keyDifference(oldDomainsSet, newDomainSet);
+        this.remove(removals);
+
+        // Update records
+        this.forObject(newDomainSet, (key: string, value: string) => {
+            this.domains[key] = value;
+        });
+
+        this.notifyAddition(Object.keys(newDomainSet));
+    }
+
     public add(names: string[], accountEmail: string): void {
         for (const name of names) {
-            this.domains[name] = accountEmail;
+            this.doAdd(name, accountEmail);
         }
-        // Check if we need to process now, because we're already running
-        if (!this.isRunning()) {
-            return;
-        }
-        const tasks: Generator<Task<boolean>> = this.createTasks(...names);
-        void new TaskBatching().run(tasks, 1);
+        this.notifyAddition(names);
     }
 
     public remove(commonNames: string[]): void {
@@ -67,6 +77,39 @@ export class CertMonitor implements CertMonitorI {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
             delete this.domains[commonName];
         }
+    }
+
+    private forObject<V>(object: Record<string, V>, callback: (key: string, value: V) => void): void {
+        for (const key in object) {
+            if (Object.prototype.hasOwnProperty.call(object, key) === true) {
+                const value: V = object[key];
+                callback(key, value);
+            }
+        }
+    }
+
+    private keyDifference(firstSet: Record<string, string>, secondSet: Record<string, string>): string[] {
+        // Find keys in the first set that are not in the seconds
+        return Object.keys(firstSet).filter((domainName: string) => {
+            return !this.objectHasKey(secondSet, domainName);
+        });
+    }
+
+    private objectHasKey(theDomains: Record<string, string>, domainName: string): boolean {
+        return Object.prototype.hasOwnProperty.call(theDomains, domainName) === true;
+    }
+
+    private doAdd(name: string, accountEmail: string): void {
+        this.domains[name] = accountEmail;
+    }
+
+    private notifyAddition(names: string[]): void {
+        // Check if we need to process now, because we're already running
+        if (!this.isRunning()) {
+            return;
+        }
+        const tasks: Generator<Task<boolean>> = this.createTasks(...names);
+        void new TaskBatching().run(tasks, 1);
     }
 
     private isRunning(): boolean {

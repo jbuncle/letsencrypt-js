@@ -1,7 +1,7 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
 import type { Authorization, Challenge } from "acme-client/types/rfc8555";
 import { promises as fs } from 'fs';
-import type { ChallengeHandlerI } from "../ChallengeHandlerI";
+import type { ChallengeHandlerI } from "../../ChallengeHandlerI";
 
 export class WebRootChallengeHandler implements ChallengeHandlerI {
 

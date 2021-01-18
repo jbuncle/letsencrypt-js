@@ -1,7 +1,7 @@
-import type { ChallengeHandlerI } from "./ChallengeHandlerI";
 import type { LoggerInterface } from "@jbuncle/logging-js";
-import type { ChallengeI } from "./ChallengeI";
-import type { AuthorizationI } from "./AuthorizationI";
+import type { AuthorizationI } from "../AuthorizationI";
+import type { ChallengeHandlerI } from "../ChallengeHandlerI";
+import type { ChallengeI } from "../ChallengeI";
 
 export class ChallengeHandler implements ChallengeHandlerI {
 

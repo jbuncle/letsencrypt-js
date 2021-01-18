@@ -4,8 +4,8 @@ import type { Challenge } from "acme-client/types/rfc8555";
 import type { AcmeClientFactory } from "./AcmeClientFactory";
 import type { CsrOptions } from "./CsrOptions";
 import type { LoggerInterface } from "@jbuncle/logging-js";
-import type { ChallengeHandlerI } from "../Acme/ChallengeHandlerI";
 import type { CertResult } from "./CertResult";
+import type { ChallengeHandlerI } from "../ChallengeHandlerI";
 
 
 export class CertGenerator {
