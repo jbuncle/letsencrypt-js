@@ -30,7 +30,7 @@ export class CertMonitorFactory implements CertMonitorFactoryI {
         const certGenerator: CertGenerator = new CertGenerator(logger, acmeClientFactory, acmeChallengeHandler);
         const certHandler: CertHandler = new CertHandler(certGenerator, certFilePathFormat, keyFilePathFormat, expiryThesholdDays);
 
-        return new CertMonitor(certHandler, logger);
+        return new CertMonitor(certHandler);
     }
 
     private createAccountKeyProvider(accountKeyPath: string | undefined): AccountKeyProviderI {

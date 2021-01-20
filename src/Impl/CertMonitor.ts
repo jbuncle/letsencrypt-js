@@ -3,7 +3,7 @@ import { CertMonitorEvent } from "../CertMonitorEvent";
 import type { CertMonitorI } from "../CertMonitorI";
 import { SynchronousRepeat } from "../Util/SynchronousRepeat";
 import type { Task } from "../Util/Task";
-import { TaskBatching } from "../Util/TaskBatching";
+import { TaskBatcher } from "../Util/TaskBatcher";
 import type { CertHandler } from "./CertHandler";
 
 /**
@@ -20,6 +20,8 @@ export class CertMonitor implements CertMonitorI {
      * Map of domains and emails.
      */
     private readonly eventEmitter: EventEmitter = new EventEmitter();
+
+    private readonly taskBatcher: TaskBatcher<boolean> = new TaskBatcher<boolean>(5);
 
     private intervalTimeout: SynchronousRepeat | undefined = undefined;
 
@@ -44,7 +46,8 @@ export class CertMonitor implements CertMonitorI {
         // TODO: don't use interval as slow operations can result in overalapping
         this.intervalTimeout = new SynchronousRepeat(async () => {
             // Run in task pool to avoid going crazy with tasks
-            return new TaskBatching().run(this.createTasks(), 5)
+            const tasks: Generator<Task<boolean>> = this.createTasks();
+            return this.taskBatcher.addAndRun(tasks);
         }, ms);
         this.emit(CertMonitorEvent.STARTED);
 
@@ -120,8 +123,8 @@ export class CertMonitor implements CertMonitorI {
         if (!this.isRunning()) {
             return;
         }
-        const tasks: Generator<Task<boolean>> = this.createTasks(...names);
-        void new TaskBatching().run(tasks, 1);
+        const task: Generator<Task<boolean>> = this.createTasks(...names);
+        void this.taskBatcher.addAndRun(task).finally();
     }
 
     private isRunning(): boolean {
