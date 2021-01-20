@@ -7,7 +7,7 @@ type LeDirectoryUrl = typeof directory.letsencrypt.production | typeof directory
 export class AcmeClientFactory {
 
     /**
-     * 
+     *
      * @param isStaging 
      * @param accountKeyPath  Path to LE account key, will generate if file doesn't exist.
      */

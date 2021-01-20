@@ -1,9 +1,10 @@
-import type { CertHandler } from "./CertHandler";
+import { EventEmitter } from "events";
+import { CertMonitorEvent } from "../CertMonitorEvent";
 import type { CertMonitorI } from "../CertMonitorI";
 import { SynchronousRepeat } from "../Util/SynchronousRepeat";
-import type { LoggerInterface } from "@jbuncle/logging-js";
 import type { Task } from "../Util/Task";
 import { TaskBatching } from "../Util/TaskBatching";
+import type { CertHandler } from "./CertHandler";
 
 /**
  * Class for monitoring certificates - renewing or creating certificates as needed.
@@ -15,6 +16,11 @@ export class CertMonitor implements CertMonitorI {
      */
     private readonly domains: Record<string, string> = {};
 
+    /**
+     * Map of domains and emails.
+     */
+    private readonly eventEmitter: EventEmitter = new EventEmitter();
+
     private intervalTimeout: SynchronousRepeat | undefined = undefined;
 
     /**
@@ -23,8 +29,11 @@ export class CertMonitor implements CertMonitorI {
      */
     public constructor(
         private readonly certHandler: CertHandler,
-        private readonly logger: LoggerInterface,
     ) { }
+
+    public on(event: CertMonitorEvent, callback: (...args: unknown[]) => void): void {
+        this.eventEmitter.on(event, callback);
+    }
 
     public async start(frequencyMinutes: number): Promise<void> {
         if (this.intervalTimeout !== undefined) {
@@ -37,6 +46,7 @@ export class CertMonitor implements CertMonitorI {
             // Run in task pool to avoid going crazy with tasks
             return new TaskBatching().run(this.createTasks(), 5)
         }, ms);
+        this.emit(CertMonitorEvent.STARTED);
 
         await this.intervalTimeout.run();
     }
@@ -47,6 +57,7 @@ export class CertMonitor implements CertMonitorI {
         }
         this.intervalTimeout.stop();
         this.intervalTimeout = undefined;
+        this.emit(CertMonitorEvent.STOPPED);
     }
 
     public set(newDomainSet: Record<string, string>): void {
@@ -140,15 +151,24 @@ export class CertMonitor implements CertMonitorI {
             try {
                 const result: boolean = await this.certHandler.generateOrRenewCertificate(domainName, accountEmail);
                 if (result) {
-                    this.logger.info(`Generated certificate for ${domainName}`, {});
+                    this.emit(CertMonitorEvent.GENERATED, domainName, accountEmail);
                 } else {
-                    this.logger.info(`Skipped generating certificate for ${domainName}`, {});
+                    this.emit(CertMonitorEvent.SKIPPED, domainName, accountEmail);
                 }
                 return result;
             } catch (e: unknown) {
-                this.logger.error(String(e), {});
+                const numErrorListeners: number = this.eventEmitter.listenerCount(CertMonitorEvent.ERROR);
+                if (numErrorListeners < 1) {
+                    throw new Error("Unhandled error: " + String(e));
+                } else {
+                    this.emit(CertMonitorEvent.ERROR, e);
+                }
                 return false;
             }
         };
+    }
+
+    private emit(event: CertMonitorEvent, ...args: unknown[]): void {
+        this.eventEmitter.emit(event, args);
     }
 }
