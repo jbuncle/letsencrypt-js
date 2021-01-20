@@ -119,6 +119,10 @@ export class CertMonitor implements CertMonitorI {
     }
 
     private notifyAddition(names: string[]): void {
+        if (names.length < 1) {
+            // Nothing to do
+            return;
+        }
         // Check if we need to process now, because we're already running
         if (!this.isRunning()) {
             return;
