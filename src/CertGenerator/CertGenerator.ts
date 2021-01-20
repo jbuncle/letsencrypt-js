@@ -27,10 +27,10 @@ export class CertGenerator {
     ): Promise<CertResult> {
 
         // Create ACME client
-        const client = await this.acmeClientFactory.create();
+        const client = await this.acmeClientFactory.create(csrOptions);
 
         // Create CSR (Certificate Signing Request)
-        const [key, csr] = await forge.createCsr(csrOptions);
+        const [sslPrivateKey, csr] = await forge.createCsr(csrOptions);
 
         const challengeCreateFn: ChallengeCallback = async (authz: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
             return this.acmeChallengeHandler.create(authz, challenge, keyAuthorization);
@@ -56,7 +56,7 @@ export class CertGenerator {
         const cert: string = await client.auto(options);
 
         const result: CertResult = {
-            privateKey: key.toString(),
+            privateKey: sslPrivateKey.toString(),
             certificate: cert.toString(),
         };
         this.logger.info(JSON.stringify(result), {});

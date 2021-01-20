@@ -7,6 +7,7 @@ export interface CertMonitorFactoryI {
         handlers: ChallengeHandlerI[],
         certFilePathFormat: string,
         keyFilePathFormat: string,
+        accountKeyPath?: string,
         expiryThesholdDays?: number
     ) => CertMonitorI;
 }
