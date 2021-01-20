@@ -14,7 +14,11 @@ export class SynchronousRepeat {
     public constructor(
         private readonly callback: () => Promise<void>,
         private readonly delayMs: number,
-    ) { }
+    ) {
+        if (isNaN(+delayMs)) {
+            throw new Error(`Delay is not a number, '${delayMs}'`);
+        }
+    }
 
     public async run(): Promise<void> {
 
