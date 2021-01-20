@@ -22,15 +22,26 @@ export class TaskBatcher<T> {
             return this.currentPromise;
         }
 
-        this.currentPromise = this.run();
+        this.currentPromise = this.runBatch();
         await this.currentPromise;
         this.currentPromise = undefined;
     }
 
-    private async run(): Promise<void> {
-        while (this.tasks.length > 0) {
+    /**
+     * Run batches, recursively
+     */
+    private async runBatch(): Promise<void> {
+        if (this.tasks.length < 1) {
+            return;
+        }
+        try {
+
             const batch: Task<T>[] = this.shiftN(this.size);
             await this.invokeTasks(batch);
+
+        } finally {
+            // Run recursively in "finally" as this avoids an error in the previous batch breaking the batcher
+            await this.runBatch();
         }
     }
 
