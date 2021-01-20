@@ -1,6 +1,6 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
 import { ChallengeHandler } from "./Acme/ChallengeHandler";
-import { AccountKeyProviderI } from "./CertGenerator/AccountKeyProviderI";
+import type { AccountKeyProviderI } from "./CertGenerator/AccountKeyProviderI";
 import { AccountKeyGenerator } from "./CertGenerator/AccountKeyProviders/AccountKeyGenerator";
 import { FileAccountKeyProvider } from "./CertGenerator/AccountKeyProviders/FileAccountKeyProvider";
 import { AcmeClientFactory } from "./CertGenerator/AcmeClientFactory";
