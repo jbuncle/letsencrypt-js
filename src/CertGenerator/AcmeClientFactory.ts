@@ -1,6 +1,7 @@
-import type { ClientOptions, CsrOptions } from "acme-client";
+import type { ClientOptions } from "acme-client";
 import { Client, directory } from "acme-client";
 import type { AccountKeyProviderI } from "./AccountKeyProviderI";
+import type { CsrOptions } from "./CsrOptions";
 
 type LeDirectoryUrl = typeof directory.letsencrypt.production | typeof directory.letsencrypt.staging;
 
@@ -25,9 +26,6 @@ export class AcmeClientFactory {
         };
         return new Client(clientOptions);
     }
-
-
-
 
     private getLeDirectoryUrl(): LeDirectoryUrl {
         if (this.isStaging) {

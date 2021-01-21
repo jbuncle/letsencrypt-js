@@ -1,4 +1,4 @@
-import type { CsrOptions } from "acme-client/types";
+import type { CsrOptions } from "./CsrOptions";
 
 export interface AccountKeyProviderI {
 
