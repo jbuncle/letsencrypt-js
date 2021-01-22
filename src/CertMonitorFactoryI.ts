@@ -2,7 +2,7 @@ import type { LoggerInterface } from "@jbuncle/logging-js";
 import type { ChallengeHandlerI, CertMonitorI } from ".";
 
 export interface CertMonitorFactoryI {
-    createCertMonitor: (
+    create: (
         logger: LoggerInterface,
         handlers: ChallengeHandlerI[],
         certFilePathFormat: string,

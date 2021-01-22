@@ -17,7 +17,7 @@ import { CertMonitor } from "./CertMonitor/CertMonitor";
  */
 export class CertMonitorFactory implements CertMonitorFactoryI {
 
-    public createCertMonitor(
+    public create(
         logger: LoggerInterface,
         handlers: ChallengeHandlerI[],
         certFilePathFormat: string,

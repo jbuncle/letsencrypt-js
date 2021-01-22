@@ -10,10 +10,6 @@ import type { AuthorizationI } from "../AuthorizationI";
  */
 export abstract class AbstractDnsChallengeHandler implements ChallengeHandlerI {
 
-    public constructor(
-        protected readonly logger: LoggerInterface,
-    ) { }
-
     public getTypes(): string[] {
         return [`dns-01`];
     }
@@ -22,9 +18,6 @@ export abstract class AbstractDnsChallengeHandler implements ChallengeHandlerI {
 
         const dnsRecord: DNSRecordI = this.createDnsRecordForAuth(authz, keyAuthorization);
         await this.addRecord(dnsRecord);
-
-        this.logger.info(`Creating`, dnsRecord);
-
         return true;
     }
 
