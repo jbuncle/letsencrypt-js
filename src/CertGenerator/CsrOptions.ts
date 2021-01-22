@@ -1,5 +1,5 @@
 
-export interface CsrOptions {
+export interface CsrOptionsI {
     commonName?: string;
     altNames?: string[];
     country?: string;

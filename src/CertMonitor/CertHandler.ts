@@ -9,6 +9,9 @@ import { format } from "util";
  */
 export class CertHandler {
 
+    /**
+     * Domain currently being processed (use to prevent asynchronous processing of the same domain).
+     */
     private readonly inProgressDomains: Record<string, boolean> = {};
 
     /**
@@ -24,7 +27,12 @@ export class CertHandler {
         private readonly expiryThesholdDays: number = 5,
     ) { }
 
-
+    /**
+     * Generate or renew certificate for given domain name.
+     *
+     * @param commonName 
+     * @param accountEmail 
+     */
     public async generateOrRenewCertificate(commonName: string, accountEmail: string): Promise<boolean> {
         // TODO: add async protection - to avoid 2 processes generating same for same domain
         // Check if certificate exists or needs renewal

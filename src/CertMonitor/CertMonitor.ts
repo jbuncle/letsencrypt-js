@@ -21,30 +21,47 @@ export class CertMonitor implements CertMonitorI {
      */
     private readonly eventEmitter: EventEmitter = new EventEmitter();
 
+    /**
+     * TaskBatcher - for limiting processes for generating certificates.
+     */
     private readonly taskBatcher: TaskBatcher<boolean> = new TaskBatcher<boolean>(5);
 
+    /**
+     * Interval for check if certificates require renewal.
+     */
     private intervalTimeout: SynchronousRepeat | undefined = undefined;
 
     /**
-     * 
+     *
      * @param certHandler 
      */
     public constructor(
         private readonly certHandler: CertHandler,
     ) { }
 
+    /**
+     * Add event listener.
+     *
+     * @param event The event to listen to.
+     * @param callback The even listener.
+     */
     public on(event: CertMonitorEvent, callback: (...args: unknown[]) => void): void {
         this.eventEmitter.on(event, callback);
     }
 
+    /**
+     * Start watching for changes.
+     *
+     * @param frequencyMinutes 
+     */
     public async start(frequencyMinutes: number): Promise<void> {
         if (this.intervalTimeout !== undefined) {
-            throw new Error("Already running");
+            throw new Error(`Already running`);
         }
 
         const ms: number = frequencyMinutes * 60000;
         // TODO: don't use interval as slow operations can result in overalapping
-        this.intervalTimeout = new SynchronousRepeat(async () => {
+        this.intervalTimeout = new SynchronousRepeat(async() => {
             // Run in task pool to avoid going crazy with tasks
             const tasks: Generator<Task<boolean>> = this.createTasks();
             return this.taskBatcher.addAndRun(tasks);
@@ -54,6 +71,9 @@ export class CertMonitor implements CertMonitorI {
         await this.intervalTimeout.run();
     }
 
+    /**
+     * Stop watching certificates.
+     */
     public stop(): void {
         if (this.intervalTimeout === undefined) {
             return;
@@ -63,30 +83,35 @@ export class CertMonitor implements CertMonitorI {
         this.emit(CertMonitorEvent.STOPPED);
     }
 
-    public set(newDomainSet: Record<string, string>): void {
+    /**
+     * Update the domains list (of watched certificates).
+     *
+     * Removes any missing domains from this instance.
+     *
+     * @param domains
+     */
+    public set(domains: Record<string, string>): void {
 
-        const removals: string[] = this.keyDifference(this.domains, newDomainSet);
-        const additions: string[] = this.keyDifference(newDomainSet, this.domains);
+        const removals: string[] = this.keyDifference(this.domains, domains);
+        const additions: string[] = this.keyDifference(domains, this.domains);
 
         // Remove domains
         this.remove(removals);
 
         // Update with all records (overwrite any changed emails)
-        this.forObject(newDomainSet, (key: string, value: string) => {
+        this.forObject(domains, (key: string, value: string) => {
             this.domains[key] = value;
         });
 
         this.notifyAddition(additions);
     }
 
-    public add(names: string[], accountEmail: string): void {
-        for (const name of names) {
-            this.doAdd(name, accountEmail);
-        }
-        this.notifyAddition(names);
-    }
-
-    public remove(commonNames: string[]): void {
+    /**
+     * Remove the given domain names.
+     *
+     * @param commonNames 
+     */
+    private remove(commonNames: string[]): void {
         // Consider removing certificates
         for (const commonName of commonNames) {
             // eslint-disable-next-line @typescript-eslint/no-dynamic-delete
@@ -112,10 +137,6 @@ export class CertMonitor implements CertMonitorI {
 
     private objectHasKey(theDomains: Record<string, string>, domainName: string): boolean {
         return Object.prototype.hasOwnProperty.call(theDomains, domainName) === true;
-    }
-
-    private doAdd(name: string, accountEmail: string): void {
-        this.domains[name] = accountEmail;
     }
 
     private notifyAddition(names: string[]): void {
@@ -153,7 +174,7 @@ export class CertMonitor implements CertMonitorI {
 
     private createTask(domainName: string, accountEmail: string): Task<boolean> {
         // Create task (a function that creates a promise)
-        return async (): Promise<boolean> => {
+        return async(): Promise<boolean> => {
             // Handle exceptions
             try {
                 const result: boolean = await this.certHandler.generateOrRenewCertificate(domainName, accountEmail);
@@ -166,7 +187,7 @@ export class CertMonitor implements CertMonitorI {
             } catch (e: unknown) {
                 const numErrorListeners: number = this.eventEmitter.listenerCount(CertMonitorEvent.ERROR);
                 if (numErrorListeners < 1) {
-                    throw new Error("Unhandled error: " + String(e));
+                    throw new Error(`Unhandled error: ` + String(e));
                 } else {
                     this.emit(CertMonitorEvent.ERROR, e);
                 }

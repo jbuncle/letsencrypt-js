@@ -23,7 +23,7 @@ export class SynchronousRepeat {
     public async run(): Promise<void> {
 
         if (this.running) {
-            throw new Error("Already running");
+            throw new Error(`Already running`);
         }
 
         this.running = true;

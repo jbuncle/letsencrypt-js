@@ -1,22 +1,25 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
 import type { Authorization, Challenge } from "acme-client/types/rfc8555";
 import { promises as fs } from 'fs';
-import type { ChallengeHandlerI } from "../../ChallengeHandlerI";
+import type { ChallengeHandlerI } from "../ChallengeHandlerI";
 
+/**
+ * Challenge handler which writes static web challenge files to a directory.
+ */
 export class WebRootChallengeHandler implements ChallengeHandlerI {
 
     public constructor(
         private readonly logger: LoggerInterface,
-        private readonly webRoot: string = '/var/www/html',
+        private readonly webRoot: string = `/var/www/html`,
     ) { }
 
     public getTypes(): string[] {
-        return ['http-01'];
+        return [`http-01`];
     }
 
     public async create(authz: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> {
 
-        const filePath = `${this.getWebRoot()}/.well-known/acme-challenge/${challenge.token}`;
+        const filePath: string = `${this.getWebRoot()}/.well-known/acme-challenge/${challenge.token}`;
 
         this.logger.info(`Creating challenge response for ${authz.identifier.value} at path: ${filePath}`, {});
 

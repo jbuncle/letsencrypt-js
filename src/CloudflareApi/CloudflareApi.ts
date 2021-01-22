@@ -7,25 +7,34 @@ import type { CloudflareResponseI } from "./CloudflareResponeI";
 import type { CloudflareResponeDnsI } from "./CloudflareResponeDnsI";
 
 
+/**
+ * Represents a simple HttpResponse.
+ */
 interface HttpResponse<T> {
     headers: IncomingHttpHeaders;
-    data: T,
+    data: T;
 }
 
+/**
+ * Enum for HTTP request methods.
+ */
 enum HttpRequestMethod {
-    GET = 'GET',
-    POST = 'POST',
-    PUT = 'PUT',
-    DELETE = 'DELETE',
+    GET = `GET`,
+    POST = `POST`,
+    PUT = `PUT`,
+    DELETE = `DELETE`,
 }
 type CloudflareHttpResponse<R> = HttpResponse<CloudflareResponseI<R>>;
 
+/**
+ * Class for interacting with the Cloudflare API.
+ */
 export class CloudFlareApi {
 
     public constructor(
         private readonly authToken: string,
         private readonly zoneId: string,
-        private readonly host: string = 'api.cloudflare.com',
+        private readonly host: string = `api.cloudflare.com`,
     ) { }
 
     public async listRecords(): Promise<CloudflareResponeDnsI[]> {
@@ -33,7 +42,7 @@ export class CloudFlareApi {
         const response: CloudflareHttpResponse<CloudflareResponeDnsI[]> = await this.httpsRequest(endpoint, HttpRequestMethod.GET, {});
 
         if (!response.data.success) {
-            throw new Error(response.data.errors.join(' => '));
+            throw new Error(response.data.errors.join(` => `));
         }
         return response.data.result;
     }
@@ -43,7 +52,7 @@ export class CloudFlareApi {
         const response: CloudflareHttpResponse<CloudflareResponeDnsI> = await this.httpsRequest(endpoint, HttpRequestMethod.POST, record);
 
         if (!response.data.success) {
-            throw new Error(response.data.messages.join(' => '));
+            throw new Error(response.data.messages.join(` => `));
         }
         return response.data.result;
     }
@@ -56,7 +65,7 @@ export class CloudFlareApi {
         const response: CloudflareHttpResponse<CloudflareResponeDnsI> = await this.httpsRequest(endpoint, HttpRequestMethod.DELETE, {});
 
         if (!response.data.success) {
-            throw new Error(response.data.messages.join(' => '));
+            throw new Error(response.data.messages.join(` => `));
         }
         return response.data.result;
     }
@@ -67,25 +76,25 @@ export class CloudFlareApi {
 
             const postData: string = JSON.stringify(data);
             const options: RequestOptions = {
-                protocol: 'https:',
+                protocol: `https:`,
                 hostname: this.host,
                 port: 443,
                 path,
                 method,
                 headers: {
                     'Authorization': `Bearer ${this.authToken}`,
-                    'Content-Type': 'application/json',
+                    'Content-Type': `application/json`,
                     'Content-Length': Buffer.byteLength(postData)
                 }
             };
 
             const req: ClientRequest = request(options, (res) => {
-                let responseData: string = '';
-                res.setEncoding('utf8');
-                res.on('data', (chunk) => {
+                let responseData: string = ``;
+                res.setEncoding(`utf8`);
+                res.on(`data`, (chunk) => {
                     responseData += chunk;
                 });
-                res.on('end', () => {
+                res.on(`end`, () => {
                     resolve({
                         headers: res.headers,
                         data: JSON.parse(responseData) as CloudflareResponseI<R>,
@@ -93,7 +102,7 @@ export class CloudFlareApi {
                 });
             });
 
-            req.on('error', (e) => {
+            req.on(`error`, (e) => {
                 reject(e);
             });
 

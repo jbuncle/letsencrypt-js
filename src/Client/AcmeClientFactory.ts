@@ -4,6 +4,10 @@ import type { AccountKeyProviderI } from "./AccountKeyProviderI";
 
 type LeDirectoryUrl = typeof directory.letsencrypt.production | typeof directory.letsencrypt.staging;
 
+
+/**
+ * Factory for create ACME Clients.
+ */
 export class AcmeClientFactory {
 
     /**

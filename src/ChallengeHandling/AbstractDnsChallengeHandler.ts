@@ -1,19 +1,21 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
-import type { DNSRecordI } from "../../DNS/DNSRecordI";
-import { RecordType } from "../../DNS/RecordType";
-import type { ChallengeHandlerI } from "../../ChallengeHandlerI";
-import type { ChallengeI } from "../../ChallengeI";
-import type { AuthorizationI } from "../../AuthorizationI";
+import type { DNSRecordI } from "../DNS/DNSRecordI";
+import { RecordType } from "../DNS/RecordType";
+import type { ChallengeHandlerI } from "../ChallengeHandlerI";
+import type { ChallengeI } from "../ChallengeI";
+import type { AuthorizationI } from "../AuthorizationI";
 
+/**
+ * Abstract DNS Challenge Handler.
+ */
 export abstract class AbstractDnsChallengeHandler implements ChallengeHandlerI {
-
 
     public constructor(
         protected readonly logger: LoggerInterface,
     ) { }
 
     public getTypes(): string[] {
-        return ['dns-01'];
+        return [`dns-01`];
     }
 
     public async create(authz: AuthorizationI, challenge: ChallengeI, keyAuthorization: string): Promise<boolean> {
@@ -21,7 +23,7 @@ export abstract class AbstractDnsChallengeHandler implements ChallengeHandlerI {
         const dnsRecord: DNSRecordI = this.createDnsRecordForAuth(authz, keyAuthorization);
         await this.addRecord(dnsRecord);
 
-        this.logger.info('Creating', dnsRecord);
+        this.logger.info(`Creating`, dnsRecord);
 
         return true;
     }

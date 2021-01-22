@@ -1,12 +1,14 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
-import type { CloudFlareApi as CloudflareApi } from "../../CloudflareApi/CloudflareApi";
-import type { DNSRecordI } from "../../DNS/DNSRecordI";
-import type { CloudflareResponeDnsI } from "../../CloudflareApi/CloudflareResponeDnsI";
-import type { ChallengeHandlerI } from "../../ChallengeHandlerI";
+import type { CloudFlareApi as CloudflareApi } from "../CloudflareApi/CloudflareApi";
+import type { DNSRecordI } from "../DNS/DNSRecordI";
+import type { CloudflareResponeDnsI } from "../CloudflareApi/CloudflareResponeDnsI";
+import type { ChallengeHandlerI } from "../ChallengeHandlerI";
 import { AbstractDnsChallengeHandler } from "./AbstractDnsChallengeHandler";
 
+/**
+ * DNS Challenge Handler using the Cloudflare API.
+ */
 export class CloudflareDnsChallengeHandler extends AbstractDnsChallengeHandler implements ChallengeHandlerI {
-
 
     public constructor(
         logger: LoggerInterface,
@@ -14,7 +16,6 @@ export class CloudflareDnsChallengeHandler extends AbstractDnsChallengeHandler i
     ) {
         super(logger);
     }
-
 
     protected async addRecord(dnsRecord: DNSRecordI): Promise<boolean> {
         await this.cloudflareApi.addRecord(dnsRecord);
@@ -40,8 +41,6 @@ export class CloudflareDnsChallengeHandler extends AbstractDnsChallengeHandler i
         if (record === undefined) {
             throw new Error(`Failed to find record for ${search.name}`)
         }
-
-
         return record.id;
     }
 }

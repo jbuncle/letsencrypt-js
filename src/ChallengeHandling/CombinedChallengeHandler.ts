@@ -3,7 +3,10 @@ import type { AuthorizationI } from "../AuthorizationI";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
 import type { ChallengeI } from "../ChallengeI";
 
-export class ChallengeHandler implements ChallengeHandlerI {
+/**
+ * Combine multiple challenge handlers into one.
+ */
+export class CombinedChallengeHandler implements ChallengeHandlerI {
 
     private readonly handlers: Record<string, ChallengeHandlerI> = {};
 
@@ -35,7 +38,7 @@ export class ChallengeHandler implements ChallengeHandlerI {
      * @returns {Promise}
      */
     public async create(authz: AuthorizationI, challenge: ChallengeI, keyAuthorization: string): Promise<boolean> {
-        this.logger.info('Triggered challengeCreateFn()', {});
+        this.logger.info(`Triggered challengeCreateFn()`, {});
         const challengeType: string = challenge.type;
 
         const handler: ChallengeHandlerI = this.getHandler(challengeType);
@@ -53,7 +56,7 @@ export class ChallengeHandler implements ChallengeHandlerI {
      * @returns {Promise}
      */
     public async remove(authz: AuthorizationI, challenge: ChallengeI, keyAuthorization: string): Promise<boolean> {
-        this.logger.info('Triggered challengeRemoveFn()', {});
+        this.logger.info(`Triggered challengeRemoveFn()`, {});
         const challengeType: string = challenge.type;
 
         const handler: ChallengeHandlerI = this.getHandler(challengeType);
@@ -63,7 +66,7 @@ export class ChallengeHandler implements ChallengeHandlerI {
 
     private getHandler(challengeType: string): ChallengeHandlerI {
         if (!(Object.prototype.hasOwnProperty.call(this.handlers, challengeType) as boolean)) {
-            throw new Error("Unsupported challenge type");
+            throw new Error(`Unsupported challenge type`);
         }
         return this.handlers[challengeType];
 

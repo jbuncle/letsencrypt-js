@@ -2,7 +2,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { RecordType } from "../DNS/RecordType";
 
-
 export interface CloudflareResponeDnsI {
     id: string;
     type: RecordType;

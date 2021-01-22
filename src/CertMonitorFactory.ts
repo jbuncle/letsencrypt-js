@@ -1,20 +1,21 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
 import { accessSync, constants } from "fs";
-import { ChallengeHandler } from "./Acme/ChallengeHandler";
-import type { AccountKeyProviderI } from "./CertGenerator/AccountKeyProviderI";
-import { AccountKeyGenerator } from "./CertGenerator/AccountKeyProviders/AccountKeyGenerator";
-import { FileAccountKeyProvider } from "./CertGenerator/AccountKeyProviders/FileAccountKeyProvider";
-import { AcmeClientFactory } from "./CertGenerator/AcmeClientFactory";
+import { CombinedChallengeHandler } from "./ChallengeHandling/CombinedChallengeHandler";
+import type { AccountKeyProviderI } from "./Client/AccountKeyProviderI";
+import { AccountKeyGenerator } from "./Client/AccountKeyProviders/AccountKeyGenerator";
+import { FileAccountKeyProvider } from "./Client/AccountKeyProviders/FileAccountKeyProvider";
+import { AcmeClientFactory } from "./Client/AcmeClientFactory";
 import { CertGenerator } from "./CertGenerator/CertGenerator";
 import type { CertMonitorFactoryI } from "./CertMonitorFactoryI";
 import type { CertMonitorI } from "./CertMonitorI";
 import type { ChallengeHandlerI } from "./ChallengeHandlerI";
-import { CertHandler } from "./Impl/CertHandler";
-import { CertMonitor } from "./Impl/CertMonitor";
+import { CertHandler } from "./CertMonitor/CertHandler";
+import { CertMonitor } from "./CertMonitor/CertMonitor";
 
-
+/**
+ * Factory for creating CertMonitorI instances.
+ */
 export class CertMonitorFactory implements CertMonitorFactoryI {
-
 
     public createCertMonitor(
         logger: LoggerInterface,
@@ -26,8 +27,8 @@ export class CertMonitorFactory implements CertMonitorFactoryI {
     ): CertMonitorI {
         const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(accountKeyDir);
         const acmeClientFactory: AcmeClientFactory = new AcmeClientFactory(accountKeyProvider);
-        const acmeChallengeHandler: ChallengeHandlerI = new ChallengeHandler(logger, handlers);
-        const certGenerator: CertGenerator = new CertGenerator(logger, acmeClientFactory, acmeChallengeHandler);
+        const acmeChallengeHandler: ChallengeHandlerI = new CombinedChallengeHandler(logger, handlers);
+        const certGenerator: CertGenerator = new CertGenerator(acmeClientFactory, acmeChallengeHandler);
         const certHandler: CertHandler = new CertHandler(certGenerator, certFilePathFormat, keyFilePathFormat, expiryThesholdDays);
 
         return new CertMonitor(certHandler);

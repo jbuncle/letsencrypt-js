@@ -1,17 +1,17 @@
 import type { Authorization, ClientAutoOptions} from "acme-client";
 import { forge } from "acme-client";
 import type { Challenge } from "acme-client/types/rfc8555";
-import type { AcmeClientFactory } from "./AcmeClientFactory";
-import type { CsrOptions } from "./CsrOptions";
-import type { LoggerInterface } from "@jbuncle/logging-js";
+import type { AcmeClientFactory } from "../Client/AcmeClientFactory";
+import type { CsrOptionsI } from "./CsrOptions";
 import type { CertResult } from "./CertResult";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
 
-
+/**
+ * Main class responsible for actually generating a certficate.
+ */
 export class CertGenerator {
 
     public constructor(
-        private readonly logger: LoggerInterface,
         private readonly acmeClientFactory: AcmeClientFactory,
         private readonly acmeChallengeHandler: ChallengeHandlerI,
     ) { }
@@ -22,7 +22,7 @@ export class CertGenerator {
      * @param accountEmail Account email (not certificate email) 
      */
     public async generate(
-        csrOptions: CsrOptions,
+        csrOptions: CsrOptionsI,
         accountEmail: string
     ): Promise<CertResult> {
 
@@ -32,10 +32,10 @@ export class CertGenerator {
         // Create CSR (Certificate Signing Request)
         const [sslPrivateKey, csr] = await forge.createCsr(csrOptions);
 
-        const challengeCreateFn: ChallengeCallback = async (authz: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
+        const challengeCreateFn: ChallengeCallback = async(authz: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
             return this.acmeChallengeHandler.create(authz, challenge, keyAuthorization);
         };
-        const challengeRemoveFn: ChallengeCallback = async (authz: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
+        const challengeRemoveFn: ChallengeCallback = async(authz: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
             return this.acmeChallengeHandler.remove(authz, challenge, keyAuthorization);
         }
 
@@ -48,18 +48,12 @@ export class CertGenerator {
             challengeRemoveFn,
         };
 
-        // this.logger.info(`CSR:\n${csr.toString()}`);
-        // this.logger.info(`Private key:\n${key.toString()}`);
-
-
-        // this.logger.info('Generating certificate');
         const cert: string = await client.auto(options);
 
         const result: CertResult = {
             privateKey: sslPrivateKey.toString(),
             certificate: cert.toString(),
         };
-        this.logger.info(JSON.stringify(result), {});
 
         return result;
     }
