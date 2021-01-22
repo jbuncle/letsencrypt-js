@@ -1,9 +1,7 @@
 import { existsSync, promises as fs } from "fs";
 import { join } from "path";
-import type { AccountKeyProviderI as AccountKeyProviderI } from "../AccountKeyProviderI";
-import type { CsrOptions } from "../CsrOptions";
+import type { AccountKeyProviderI } from "../AccountKeyProviderI";
 import type { AccountKeyGenerator } from "./AccountKeyGenerator";
-
 
 export class FileAccountKeyProvider implements AccountKeyProviderI {
 
@@ -13,9 +11,9 @@ export class FileAccountKeyProvider implements AccountKeyProviderI {
     ) { }
 
 
-    public async getAccountKey(csrOptions: CsrOptions): Promise<Buffer> {
+    public async getAccountKey(accountEmail: string): Promise<Buffer> {
 
-        const keyPath: string = this.getKeyPath(csrOptions);
+        const keyPath: string = this.getKeyPath(accountEmail);
         if (!existsSync(keyPath)) {
             if (this.accountKeyGenerator === undefined) {
                 throw new Error("Key file doesn't exist");
@@ -28,13 +26,9 @@ export class FileAccountKeyProvider implements AccountKeyProviderI {
         return fs.readFile(keyPath);
     }
 
-    private getKeyPath(csrOptions: CsrOptions): string {
-        let emailAddress: string | undefined = csrOptions.emailAddress;
-        if (emailAddress === undefined) {
-            emailAddress = 'default';
-        }
+    private getKeyPath(accountEmail: string): string {
         // Escape special chars to prevent filename injection attack
-        const filename: string = emailAddress.replace(/[^a-z0-9@]/gi, '_').toLowerCase();
+        const filename: string = accountEmail.replace(/[^a-z0-9@]/gi, '_').toLowerCase();
 
         return join(this.accountKeyDir, `${filename}.key`);
     }

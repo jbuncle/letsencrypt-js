@@ -1,5 +1,5 @@
 import { forge } from "acme-client";
-import type { AccountKeyProviderI as AccountKeyProviderI } from "../AccountKeyProviderI";
+import type { AccountKeyProviderI } from "../AccountKeyProviderI";
 
 
 export class AccountKeyGenerator implements AccountKeyProviderI {

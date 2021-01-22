@@ -1,7 +1,6 @@
 import type { ClientOptions } from "acme-client";
 import { Client, directory } from "acme-client";
 import type { AccountKeyProviderI } from "./AccountKeyProviderI";
-import type { CsrOptions } from "./CsrOptions";
 
 type LeDirectoryUrl = typeof directory.letsencrypt.production | typeof directory.letsencrypt.staging;
 
@@ -17,9 +16,9 @@ export class AcmeClientFactory {
         private readonly isStaging: boolean = true,
     ) { }
 
-    public async create(csrOptions: CsrOptions): Promise<Client> {
+    public async create(accountEmail: string): Promise<Client> {
         const directoryUrl: LeDirectoryUrl = this.getLeDirectoryUrl();
-        const accountKey = await this.accountKeyProvider.getAccountKey(csrOptions)
+        const accountKey = await this.accountKeyProvider.getAccountKey(accountEmail)
         const clientOptions: ClientOptions = {
             directoryUrl,
             accountKey

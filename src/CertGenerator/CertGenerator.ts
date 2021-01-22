@@ -27,7 +27,7 @@ export class CertGenerator {
     ): Promise<CertResult> {
 
         // Create ACME client
-        const client = await this.acmeClientFactory.create(csrOptions);
+        const client = await this.acmeClientFactory.create(accountEmail);
 
         // Create CSR (Certificate Signing Request)
         const [sslPrivateKey, csr] = await forge.createCsr(csrOptions);
