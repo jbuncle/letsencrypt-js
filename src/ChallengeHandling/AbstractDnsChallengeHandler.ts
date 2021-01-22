@@ -1,4 +1,3 @@
-import type { LoggerInterface } from "@jbuncle/logging-js";
 import type { DNSRecordI } from "../DNS/DNSRecordI";
 import { RecordType } from "../DNS/RecordType";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
