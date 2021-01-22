@@ -1,4 +1,5 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
+import { accessSync, constants } from "fs";
 import { ChallengeHandler } from "./Acme/ChallengeHandler";
 import type { AccountKeyProviderI } from "./CertGenerator/AccountKeyProviderI";
 import { AccountKeyGenerator } from "./CertGenerator/AccountKeyProviders/AccountKeyGenerator";
@@ -20,11 +21,10 @@ export class CertMonitorFactory implements CertMonitorFactoryI {
         handlers: ChallengeHandlerI[],
         certFilePathFormat: string,
         keyFilePathFormat: string,
-        accountKeyPath?: string,
+        accountKeyDir?: string,
         expiryThesholdDays: number = 10
     ): CertMonitorI {
-
-        const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(accountKeyPath);
+        const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(accountKeyDir);
         const acmeClientFactory: AcmeClientFactory = new AcmeClientFactory(accountKeyProvider);
         const acmeChallengeHandler: ChallengeHandlerI = new ChallengeHandler(logger, handlers);
         const certGenerator: CertGenerator = new CertGenerator(logger, acmeClientFactory, acmeChallengeHandler);
@@ -35,7 +35,12 @@ export class CertMonitorFactory implements CertMonitorFactoryI {
 
     private createAccountKeyProvider(accountKeyPath: string | undefined): AccountKeyProviderI {
         if (accountKeyPath !== undefined) {
-            return new FileAccountKeyProvider(accountKeyPath, new AccountKeyGenerator());
+            try {
+                accessSync(accountKeyPath, constants.W_OK);
+                return new FileAccountKeyProvider(accountKeyPath, new AccountKeyGenerator());
+            } catch (e: unknown) {
+                throw new Error(`Can't access '${accountKeyPath}'`);
+            }
         } else {
             return new AccountKeyGenerator();
         }
