@@ -11,12 +11,12 @@
         "lint-fix": "eslint --fix -c .eslintrc.json --ext .ts ./src"
     },
     "dependencies": {
-        "@jbuncle/eslint-config-jbuncle": "^1.2.0",
         "@jbuncle/logging-js": "^1.1.0",
         "acme-client": "^4.1.2",
         "node-forge": "^0.10.0"
     },
     "devDependencies": {
+        "@jbuncle/eslint-config-jbuncle": "^1.2.0",
         "@types/node": "^14.14.20",
         "@types/node-forge": "^0.9.6",
         "@typescript-eslint/eslint-plugin": "^4.13.0",
