@@ -1,4 +1,3 @@
-import type { LoggerInterface } from "@jbuncle/logging-js";
 import type { CloudFlareApi as CloudflareApi } from "../CloudflareApi/CloudflareApi";
 import type { DNSRecordI } from "../DNS/DNSRecordI";
 import type { CloudflareResponeDnsI } from "../CloudflareApi/CloudflareResponeDnsI";
@@ -11,10 +10,9 @@ import { AbstractDnsChallengeHandler } from "./AbstractDnsChallengeHandler";
 export class CloudflareDnsChallengeHandler extends AbstractDnsChallengeHandler implements ChallengeHandlerI {
 
     public constructor(
-        logger: LoggerInterface,
         private readonly cloudflareApi: CloudflareApi,
     ) {
-        super(logger);
+        super();
     }
 
     protected async addRecord(dnsRecord: DNSRecordI): Promise<boolean> {
@@ -25,7 +23,6 @@ export class CloudflareDnsChallengeHandler extends AbstractDnsChallengeHandler i
     protected async removeRecord(dnsRecord: DNSRecordI): Promise<boolean> {
         const id: string = await this.findRecord(dnsRecord);
 
-        this.logger.info(`Deleting '${id}'`, {});
         await this.cloudflareApi.deleteRecord(id);
 
         return true;
