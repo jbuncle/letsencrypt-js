@@ -6,6 +6,6 @@ export interface CertMonitorI {
     stop: () => void;
     add: (names: string[], accountEmail: string) => void;
     remove: (commonNames: string[]) => void;
-    on: (event: CertMonitorEvent, callback: () => void) => void;
+    on: (event: CertMonitorEvent, callback: (...args: unknown[]) => void) => void;
 }
 
