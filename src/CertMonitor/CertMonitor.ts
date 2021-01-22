@@ -197,6 +197,6 @@ export class CertMonitor implements CertMonitorI {
     }
 
     private emit(event: CertMonitorEvent, ...args: unknown[]): void {
-        this.eventEmitter.emit(event, args);
+        this.eventEmitter.emit(event, ...args);
     }
 }
