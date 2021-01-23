@@ -22,6 +22,7 @@ export class CertMonitorFactory implements CertMonitorFactoryI {
         handlers: ChallengeHandlerI[],
         certFilePathFormat: string,
         keyFilePathFormat: string,
+        caFilePathFormat: string,
         accountKeyDir?: string,
         expiryThesholdDays: number = 10
     ): CertMonitorI {
@@ -29,7 +30,7 @@ export class CertMonitorFactory implements CertMonitorFactoryI {
         const acmeClientFactory: AcmeClientFactory = new AcmeClientFactory(accountKeyProvider);
         const acmeChallengeHandler: ChallengeHandlerI = new CombinedChallengeHandler(logger, handlers);
         const certGenerator: CertGenerator = new CertGenerator(acmeClientFactory, acmeChallengeHandler);
-        const certHandler: CertHandler = new CertHandler(certGenerator, certFilePathFormat, keyFilePathFormat, expiryThesholdDays);
+        const certHandler: CertHandler = new CertHandler(certGenerator, certFilePathFormat, keyFilePathFormat, caFilePathFormat, expiryThesholdDays);
 
         return new CertMonitor(certHandler);
     }

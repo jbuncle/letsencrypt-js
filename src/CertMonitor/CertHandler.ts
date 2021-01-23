@@ -19,11 +19,13 @@ export class CertHandler {
       * @param certGenerator - CertGenerator that fetches the certificate from the certificate authority
       * @param certFilePathFormat - String format for cert (recives commonName) e.g. /certs/%s.crt
       * @param keyFilePathFormat - String format for key (recives commonName) e.g. /certs/%s.key
+      * @param caFilePathFormat - String format for key (recives commonName) e.g. /certs/%s.chain.pem
       */
     public constructor(
         private readonly certGenerator: CertGenerator,
         private readonly certFilePathFormat: string,
         private readonly keyFilePathFormat: string,
+        private readonly caFilePathFormat: string,
         private readonly expiryThesholdDays: number = 5,
     ) { }
 
@@ -46,10 +48,14 @@ export class CertHandler {
                 }, accountEmail);
 
                 const keyPath: string = this.getKeyPath(commonName);
+                const caFilePath: string = this.getCaFilePath(commonName);
+
                 // Write cert
                 writeFileSync(certPath, result.certificate);
                 // Write key
                 writeFileSync(keyPath, result.privateKey);
+                // Write key
+                writeFileSync(caFilePath, result.publicKey);
             } finally {
                 this.inProgressDomains[commonName] = false;
             }
@@ -71,6 +77,10 @@ export class CertHandler {
 
     private getKeyPath(commonName: string): string {
         return format(this.keyFilePathFormat, commonName);
+    }
+
+    private getCaFilePath(commonName: string): string {
+        return format(this.caFilePathFormat, commonName);
     }
 
     private requiresRegeneration(certPath: string): boolean {
