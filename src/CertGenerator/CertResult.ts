@@ -1,6 +1,6 @@
 
 export interface CertResult {
-    publicKey: string;
+    caCert: string;
     privateKey: string;
     certificate: string;
 }

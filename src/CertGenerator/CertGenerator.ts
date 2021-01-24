@@ -51,12 +51,12 @@ export class CertGenerator {
 
         const cert: string = await client.auto(options);
         const pemUtility: PemUtility = new PemUtility();
-        const publicKey: string = pemUtility.getCaCertFromFullChain(cert);
+        const caCert: string = pemUtility.getCaCertFromFullChain(cert);
 
         const result: CertResult = {
             privateKey: sslPrivateKey.toString(),
             certificate: cert.toString(),
-            publicKey,
+            caCert: caCert,
         };
 
         return result;

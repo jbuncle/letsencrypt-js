@@ -11,6 +11,8 @@ import type { CertMonitorI } from "./CertMonitorI";
 import type { ChallengeHandlerI } from "./ChallengeHandlerI";
 import { CertHandler } from "./CertMonitor/CertHandler";
 import { CertMonitor } from "./CertMonitor/CertMonitor";
+import type { CertStoreI } from "./CertStore/CertStore";
+import { BasicFSCertStore } from "./CertStore/BasicFSCertStore";
 
 /**
  * Factory for creating CertMonitorI instances.
@@ -30,7 +32,8 @@ export class CertMonitorFactory implements CertMonitorFactoryI {
         const acmeClientFactory: AcmeClientFactory = new AcmeClientFactory(accountKeyProvider);
         const acmeChallengeHandler: ChallengeHandlerI = new CombinedChallengeHandler(logger, handlers);
         const certGenerator: CertGenerator = new CertGenerator(acmeClientFactory, acmeChallengeHandler);
-        const certHandler: CertHandler = new CertHandler(certGenerator, certFilePathFormat, keyFilePathFormat, caFilePathFormat, expiryThesholdDays);
+        const certStore: CertStoreI = new BasicFSCertStore(certFilePathFormat, keyFilePathFormat, caFilePathFormat);
+        const certHandler: CertHandler = new CertHandler(certGenerator, certStore, expiryThesholdDays);
 
         return new CertMonitor(certHandler);
     }
