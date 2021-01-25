@@ -1,4 +1,3 @@
-import type { LoggerInterface } from "@jbuncle/logging-js";
 import type { AuthorizationI } from "../AuthorizationI";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
 import type { ChallengeI } from "../ChallengeI";
@@ -11,7 +10,6 @@ export class CombinedChallengeHandler implements ChallengeHandlerI {
     private readonly handlers: Record<string, ChallengeHandlerI> = {};
 
     public constructor(
-        private readonly logger: LoggerInterface,
         handlers: ChallengeHandlerI[]
     ) {
         this.handlers = {};
@@ -32,13 +30,12 @@ export class CombinedChallengeHandler implements ChallengeHandlerI {
     /**
      * Function used to satisfy an ACME challenge
      *
-     * @param {object} authz Authorization object
-     * @param {object} challenge Selected challenge
+     * @param {AuthorizationI} authz Authorization object
+     * @param {ChallengeI} challenge Selected challenge
      * @param {string} keyAuthorization Authorization key
-     * @returns {Promise}
+     * @returns {Promise<boolean>}
      */
     public async create(authz: AuthorizationI, challenge: ChallengeI, keyAuthorization: string): Promise<boolean> {
-        this.logger.info(`Triggered challengeCreateFn()`, {});
         const challengeType: string = challenge.type;
 
         const handler: ChallengeHandlerI = this.getHandler(challengeType);
@@ -50,13 +47,12 @@ export class CombinedChallengeHandler implements ChallengeHandlerI {
     /**
      * Function used to remove an ACME challenge response
      *
-     * @param {object} authz Authorization object
-     * @param {object} challenge Selected challenge
+     * @param {AuthorizationI} authz Authorization object
+     * @param {ChallengeI} challenge Selected challenge
      * @param {string} keyAuthorization Authorization key
      * @returns {Promise}
      */
     public async remove(authz: AuthorizationI, challenge: ChallengeI, keyAuthorization: string): Promise<boolean> {
-        this.logger.info(`Triggered challengeRemoveFn()`, {});
         const challengeType: string = challenge.type;
 
         const handler: ChallengeHandlerI = this.getHandler(challengeType);

@@ -8,7 +8,7 @@ type LeDirectoryUrl = typeof directory.letsencrypt.production | typeof directory
 /**
  * Factory for create ACME Clients.
  */
-export class AcmeClientFactory {
+export class ClientFactory {
 
     /**
      *

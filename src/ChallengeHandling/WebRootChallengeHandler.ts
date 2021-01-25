@@ -1,4 +1,5 @@
 import type { LoggerInterface } from "@jbuncle/logging-js";
+import { Logger } from "@jbuncle/logging-js";
 import type { Authorization, Challenge } from "acme-client/types/rfc8555";
 import { accessSync, constants, existsSync, mkdirSync, promises as fs, readdirSync, rmdirSync } from 'fs';
 import { join } from "path";
@@ -9,8 +10,9 @@ import type { ChallengeHandlerI } from "../ChallengeHandlerI";
  */
 export class WebRootChallengeHandler implements ChallengeHandlerI {
 
+    private readonly logger: LoggerInterface = Logger.getLogger(WebRootChallengeHandler.name);
+
     public constructor(
-        private readonly logger: LoggerInterface,
         private readonly webRoot: string = `/var/www/html`,
     ) {
         try {

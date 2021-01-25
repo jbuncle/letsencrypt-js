@@ -1,7 +1,7 @@
 import type { Authorization, ClientAutoOptions } from "acme-client";
 import { forge } from "acme-client";
 import type { Challenge } from "acme-client/types/rfc8555";
-import type { AcmeClientFactory } from "../Client/AcmeClientFactory";
+import type { ClientFactory } from "../Client/ClientFactory";
 import type { CsrOptionsI } from "./CsrOptions";
 import type { CertResult } from "./CertResult";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
@@ -13,7 +13,7 @@ import { PemUtility } from "../Util/PemUtility";
 export class CertGenerator {
 
     public constructor(
-        private readonly acmeClientFactory: AcmeClientFactory,
+        private readonly acmeClientFactory: ClientFactory,
         private readonly acmeChallengeHandler: ChallengeHandlerI,
     ) { }
 

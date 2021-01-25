@@ -1,4 +1,3 @@
-import type { LoggerInterface } from "@jbuncle/logging-js";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
 import { WebRootChallengeHandler } from "../ChallengeHandling/WebRootChallengeHandler";
 
@@ -7,7 +6,7 @@ import { WebRootChallengeHandler } from "../ChallengeHandling/WebRootChallengeHa
  */
 export class WebRootChallengeHandlerFactory {
 
-    public create(logger: LoggerInterface, path: string): ChallengeHandlerI {
-        return new WebRootChallengeHandler(logger, path);
+    public create(path: string): ChallengeHandlerI {
+        return new WebRootChallengeHandler(path);
     }
 }
