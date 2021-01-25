@@ -7,7 +7,6 @@ export * as HandlerFactories from "./HandlerFactories";
 
 export { AuthorizationI } from "./AuthorizationI";
 export { CertMonitorEvent } from "./CertMonitorEvent";
-export { CertMonitorFactory } from "./CertMonitorFactories/CertMonitorFactory";
 export { CertMonitorFactoryI } from "./CertMonitorFactoryI";
 export { CertMonitorI } from "./CertMonitorI";
 export { ChallengeHandlerI } from "./ChallengeHandlerI";

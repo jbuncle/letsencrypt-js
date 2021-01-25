@@ -10,9 +10,9 @@ export class BasicFSCertStore implements CertStoreI {
 
     /**
      * 
-     * @param certFilePathFormat - String format for cert (recives commonName) e.g. /certs/%s.crt
-     * @param keyFilePathFormat - String format for key (recives commonName) e.g. /certs/%s.key
-     * @param caFilePathFormat - String format for key (recives commonName) e.g. /certs/%s.chain.pem
+     * @param {string} certFilePathFormat - String format for cert (recives commonName) e.g. /certs/%s.crt
+     * @param {string} keyFilePathFormat - String format for key (recives commonName) e.g. /certs/%s.key
+     * @param {string} caFilePathFormat - String format for key (recives commonName) e.g. /certs/%s.chain.pem
      */
     public constructor(
         private readonly certFilePathFormat: string,
