@@ -12,8 +12,8 @@ export class ClientFactory {
 
     /**
      *
-     * @param isStaging 
-     * @param accountKeyPath  Path to LE account key, will generate if file doesn't exist.
+     * @param {AccountKeyProviderI} accountKeyProvider Provider for letsencrypt account key
+     * @param {boolean} isStaging Whether to use the staging environment
      */
     public constructor(
         private readonly accountKeyProvider: AccountKeyProviderI,

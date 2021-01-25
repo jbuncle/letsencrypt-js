@@ -14,9 +14,11 @@ export class CertHandler {
     private readonly inProgressDomains: Record<string, boolean> = {};
 
     /**
-      * 
-      * @param certGenerator - CertGenerator that fetches the certificate from the certificate authority
-      */
+     * 
+     * @param certGenerator - CertGenerator that fetches the certificate from the certificate authority
+     * @param certStore
+     * @param expiryThesholdDays
+     */
     public constructor(
         private readonly certGenerator: CertGenerator,
         private readonly certStore: CertStoreI,

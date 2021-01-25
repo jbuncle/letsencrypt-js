@@ -57,7 +57,11 @@ export class WebRootChallengeHandler implements ChallengeHandlerI {
 
     /**
      * Create each path in the parent path.
-     * @param parts 
+     *
+     * @param {string} path The base directory.
+     * @param {string[]} parts The subdirectories.
+     * 
+     * @returns {string} The created directory. 
      */
     private mkdirs(path: string, ...parts: string[]): string {
         for (const part of parts) {

@@ -16,7 +16,7 @@
         "node-forge": "^0.10.0"
     },
     "devDependencies": {
-        "@jbuncle/eslint-config-jbuncle": "^1.2.0",
+        "@jbuncle/eslint-config-jbuncle": "^1.3.0",
         "@types/node": "^14.14.22",
         "ts-node": "^9.1.1",
         "typescript": "^4.1.3"

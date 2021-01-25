@@ -22,6 +22,8 @@ export class CombinedChallengeHandler implements ChallengeHandlerI {
 
     /**
      * Get types supported.
+     * 
+     * @returns {string[]} The types.
      */
     public getTypes(): string[] {
         return Object.keys(this.handlers);

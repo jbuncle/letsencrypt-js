@@ -30,9 +30,9 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
     private caFilePathFormat: string = `/etc/nginx/certs/%s.chain.pem`;
 
-    private dhparamFile: string = `/etc/nginx/certs/dhparam.pem`;
+    private dhparamsFile: string = `/etc/nginx/certs/dhparam.pem`;
 
-    private dhparamPathFormat: string = `/etc/nginx/certs/%s.dhparam.pem `;
+    private dhparamsPathFormat: string = `/etc/nginx/certs/%s.dhparam.pem `;
 
     public constructor(
         private readonly expiryThesholdDays: number = 10
@@ -68,13 +68,23 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
         return this;
     }
 
-    public setDhparamPaths(dhparamPathFormat: string): NginxCertMonitorFactory {
-        this.dhparamPathFormat = dhparamPathFormat;
+    /**
+     * Set format for domain DH params file.
+     *
+     * @param dhparamsPathFormat
+     */
+    public setDhparamsPathFormat(dhparamsPathFormat: string): NginxCertMonitorFactory {
+        this.dhparamsPathFormat = dhparamsPathFormat;
         return this;
     }
 
-    public setDhparamFile(dhparamFile: string): NginxCertMonitorFactory {
-        this.dhparamFile = dhparamFile;
+    /**
+     * The path to the DH params file
+     *
+     * @param dhparamsFile 
+     */
+    public setDhparamsFile(dhparamsFile: string): NginxCertMonitorFactory {
+        this.dhparamsFile = dhparamsFile;
         return this;
     }
 
@@ -94,8 +104,8 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
             this.certFilePathFormat,
             this.keyFilePathFormat,
             this.caFilePathFormat,
-            this.dhparamFile,
-            this.dhparamPathFormat,
+            this.dhparamsFile,
+            this.dhparamsPathFormat,
         );
 
         const certHandler: CertHandler = new CertHandler(certGenerator, certStore, this.expiryThesholdDays);
