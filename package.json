@@ -11,7 +11,7 @@
         "lint-fix": "eslint --fix -c .eslintrc.json --ext .ts ./src"
     },
     "dependencies": {
-        "@jbuncle/logging-js": "^1.89.0",
+        "@jbuncle/logging-js": "^1.92.0",
         "acme-client": "^4.1.2",
         "node-forge": "^0.10.0"
     },

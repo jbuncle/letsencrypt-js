@@ -25,22 +25,36 @@ export class SymlinkFSCertHandler implements CertStoreI {
         private readonly dhparamFilePathFormat?: string | undefined,
     ) { }
 
+    /**
+     * Get the certificate string.
+     *
+     * @param commonName 
+     */
     public getCert(commonName: string): Buffer {
-        const certPath: string = this.getCertPath(commonName);
-        const crtPem: Buffer = readFileSync(certPath);
-        return crtPem;
+        const certPath: string = this.getCertRealPath(commonName);
+        return readFileSync(certPath);
     }
 
+    /**
+     * Check if the certificate exists.
+     *
+     * @param commonName 
+     */
     public hasCert(commonName: string): boolean {
-        const certPath: string = this.getCertPath(commonName);
-        return existsSync(certPath);
+        // Check we have symlink and the actual cert
+        return existsSync(this.getCertLinkPath(commonName)) && existsSync(this.getCertRealPath(commonName));
     }
 
-
+    /**
+     * Store the cert data for the domain.
+     *
+     * @param commonName The domain name.
+     * @param result The data to store
+     */
     public store(commonName: string, result: CertResult): void {
-        const storeDir: string = this.getStoreDir(commonName);
+        const storeDir: string = this.getCertsDir(commonName);
 
-        const certPath: string = join(storeDir, SymlinkFSCertHandler.CERT_NAME);
+        const certPath: string = this.getCertRealPath(commonName);
         const keyPath: string = join(storeDir, SymlinkFSCertHandler.KEY_NAME);
         const caPath: string = join(storeDir, SymlinkFSCertHandler.CA_NAME);
 
@@ -59,17 +73,39 @@ export class SymlinkFSCertHandler implements CertStoreI {
         }
     }
 
+    /**
+     * Get the real path to where the cert is actually stored.
+     *
+     * @param commonName 
+     */
+    private getCertRealPath(commonName: string): string {
+        const storeDir: string = this.getCertsDir(commonName);
+        return join(storeDir, SymlinkFSCertHandler.CERT_NAME);
+    }
+
+    /**
+     * Create symlink as a relative path.
+     *
+     * @param linkTargetPath 
+     * @param linkPathFormat 
+     * @param commonName 
+     */
     private createRelativeSymlink(linkTargetPath: string, linkPathFormat: string, commonName: string): void {
         const linkPath: string = format(linkPathFormat, commonName);
         const relativePath: string = relative(linkTargetPath, linkPath);
         symlinkSync(linkTargetPath, relativePath);
     }
 
-    private getStoreDir(commonName: string): string {
+    /**
+     * Get path to directory where the certs & keys are actually stored.
+     *
+     * @param commonName 
+     */
+    private getCertsDir(commonName: string): string {
         return format(this.storeDirFormat, commonName);
     }
 
-    private getCertPath(commonName: string): string {
+    private getCertLinkPath(commonName: string): string {
         return format(this.certFilePathFormat, commonName);
     }
 }
