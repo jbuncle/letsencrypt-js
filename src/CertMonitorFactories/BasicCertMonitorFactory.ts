@@ -27,15 +27,15 @@ export class BasicCertMonitorFactory implements CertMonitorFactoryI {
         private readonly expiryThesholdDays: number = 10
     ) { }
 
-    public create(): CertMonitorI {
+    public create(staging: boolean): CertMonitorI {
         const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(this.accountKeyDir);
-        const acmeClientFactory: ClientFactory = new ClientFactory(accountKeyProvider);
-        const acmeChallengeHandler: ChallengeHandlerI = new CombinedChallengeHandler(this.handlers);
+        const clientFactory: ClientFactory = new ClientFactory(accountKeyProvider, staging);
+        const challengeHandler: ChallengeHandlerI = new CombinedChallengeHandler(this.handlers);
 
-        const certGenerator: CertGenerator = new CertGenerator(acmeClientFactory, acmeChallengeHandler);
+        const certGenerator: CertGenerator = new CertGenerator(clientFactory, challengeHandler);
         const certStore: CertStoreI = new BasicFSCertStore(
-            this.certFilePathFormat, 
-            this.keyFilePathFormat, 
+            this.certFilePathFormat,
+            this.keyFilePathFormat,
             this.caFilePathFormat
         );
         const certHandler: CertHandler = new CertHandler(certGenerator, certStore, this.expiryThesholdDays);

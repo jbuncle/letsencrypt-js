@@ -13,8 +13,8 @@ import { PemUtility } from "../Util/PemUtility";
 export class CertGenerator {
 
     public constructor(
-        private readonly acmeClientFactory: ClientFactory,
-        private readonly acmeChallengeHandler: ChallengeHandlerI,
+        private readonly clientFactory: ClientFactory,
+        private readonly challengeHandler: ChallengeHandlerI,
     ) { }
 
     /**
@@ -28,20 +28,20 @@ export class CertGenerator {
     ): Promise<CertResult> {
 
         // Create ACME client
-        const client = await this.acmeClientFactory.create(accountEmail);
+        const client = await this.clientFactory.create(accountEmail);
 
         // Create CSR (Certificate Signing Request)
         const [sslPrivateKey, csr] = await forge.createCsr(csrOptions);
 
         const challengeCreateFn: ChallengeCallback = async(authz: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
-            return this.acmeChallengeHandler.create(authz, challenge, keyAuthorization);
+            return this.challengeHandler.create(authz, challenge, keyAuthorization);
         };
         const challengeRemoveFn: ChallengeCallback = async(authz: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
-            return this.acmeChallengeHandler.remove(authz, challenge, keyAuthorization);
+            return this.challengeHandler.remove(authz, challenge, keyAuthorization);
         }
 
         const options: ClientAutoOptions = {
-            challengePriority: this.acmeChallengeHandler.getTypes(),
+            challengePriority: this.challengeHandler.getTypes(),
             csr,
             email: accountEmail,
             termsOfServiceAgreed: true,

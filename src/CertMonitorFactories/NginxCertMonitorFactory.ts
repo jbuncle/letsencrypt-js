@@ -88,14 +88,14 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
         return this;
     }
 
-    public create(): CertMonitorI {
+    public create(staging: boolean): CertMonitorI {
 
         this.assertIsWritableDir(this.accountKeyDir);
         this.assertIsWritableDir(this.certsDir);
         this.assertIsWritableDir(this.webRoot);
 
         const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(this.accountKeyDir);
-        const clientFactory: ClientFactory = new ClientFactory(accountKeyProvider);
+        const clientFactory: ClientFactory = new ClientFactory(accountKeyProvider, staging);
         const challengeHandler: ChallengeHandlerI = new WebRootChallengeHandlerFactory().create(this.webRoot);
         const certGenerator: CertGenerator = new CertGenerator(clientFactory, challengeHandler);
 

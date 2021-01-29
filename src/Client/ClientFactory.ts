@@ -17,7 +17,7 @@ export class ClientFactory {
      */
     public constructor(
         private readonly accountKeyProvider: AccountKeyProviderI,
-        private readonly isStaging: boolean = true,
+        private readonly isStaging: boolean,
     ) { }
 
     public async create(accountEmail: string): Promise<Client> {
