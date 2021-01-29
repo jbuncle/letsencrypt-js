@@ -12,6 +12,7 @@ import { AccountKeyGenerator } from "../Client/AccountKeyProviders/AccountKeyGen
 import { FileAccountKeyProvider } from "../Client/AccountKeyProviders/FileAccountKeyProvider";
 import { ClientFactory } from "../Client/ClientFactory";
 import { WebRootChallengeHandlerFactory } from "../HandlerFactories";
+import { assertPathIsDir, assertPathIsWritable } from "../Util/Assert";
 
 /**
  * Factory for creating certs for a common Nginx server configuration.
@@ -22,7 +23,7 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
     private webRoot: string = `/var/www/html`;
 
-    private certsDir: string = `/etc/nginx/certs/%s`;
+    private certsDir: string = `/etc/nginx/certs`;
 
     private certFilePathFormat: string = `/etc/nginx/certs/%s.crt`;
 
@@ -90,9 +91,13 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
     public create(staging: boolean): CertMonitorI {
 
-        this.assertIsWritableDir(this.accountKeyDir);
-        this.assertIsWritableDir(this.certsDir);
-        this.assertIsWritableDir(this.webRoot);
+        assertPathIsDir(this.accountKeyDir);
+        assertPathIsDir(this.certsDir);
+        assertPathIsDir(this.webRoot);
+
+        assertPathIsWritable(this.accountKeyDir);
+        assertPathIsWritable(this.certsDir);
+        assertPathIsWritable(this.webRoot);
 
         const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(this.accountKeyDir);
         const clientFactory: ClientFactory = new ClientFactory(accountKeyProvider, staging);
@@ -111,18 +116,6 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
         const certHandler: CertHandler = new CertHandler(certGenerator, certStore, this.expiryThesholdDays);
 
         return new CertMonitor(certHandler);
-    }
-
-    private assertIsWritableDir(dir: string): void {
-        if (!lstatSync(dir).isDirectory()) {
-            throw new Error(`Path '${dir}' is not a directory`);
-        }
-        try {
-            accessSync(dir, constants.W_OK);
-        } catch (e: unknown) {
-            throw new Error(`Path '${dir}' is not writable`);
-        }
-
     }
 
     private createAccountKeyProvider(accountKeyDir: string | undefined): AccountKeyProviderI {
