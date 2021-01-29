@@ -13,7 +13,7 @@ export class WebRootChallengeHandler implements ChallengeHandlerI {
     private readonly logger: LoggerInterface = Logger.getLogger(WebRootChallengeHandler.name);
 
     public constructor(
-        private readonly webRoot: string = `/var/www/html`,
+        private readonly webRoot: string,
     ) {
         try {
             accessSync(webRoot, constants.W_OK);

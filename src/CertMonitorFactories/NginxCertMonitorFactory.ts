@@ -1,4 +1,4 @@
-import { accessSync, constants, lstatSync } from "fs";
+import { accessSync, constants } from "fs";
 import { CertGenerator } from "../CertGenerator/CertGenerator";
 import { CertHandler } from "../CertMonitor/CertHandler";
 import { CertMonitor } from "../CertMonitor/CertMonitor";
@@ -21,7 +21,7 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
     private accountKeyDir: string = `/etc/letsencrypt/accounts`;
 
-    private webRoot: string = `/var/www/html`;
+    private webRoot: string = `/usr/share/nginx/html`;
 
     private certsDir: string = `/etc/nginx/certs`;
 
