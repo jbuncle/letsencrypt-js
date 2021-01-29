@@ -23,7 +23,7 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
     private webRoot: string = `/usr/share/nginx/html`;
 
-    private certsDir: string = `/etc/nginx/certs`;
+    private certsDir: string = `/etc/nginx/certs/%s`;
 
     private certFilePathFormat: string = `/etc/nginx/certs/%s.crt`;
 
@@ -92,11 +92,9 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
     public create(staging: boolean): CertMonitorI {
 
         assertPathIsDir(this.accountKeyDir);
-        assertPathIsDir(this.certsDir);
         assertPathIsDir(this.webRoot);
 
         assertPathIsWritable(this.accountKeyDir);
-        assertPathIsWritable(this.certsDir);
         assertPathIsWritable(this.webRoot);
 
         const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(this.accountKeyDir);
@@ -120,12 +118,9 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
     private createAccountKeyProvider(accountKeyDir: string | undefined): AccountKeyProviderI {
         if (accountKeyDir !== undefined) {
-            try {
-                accessSync(accountKeyDir, constants.W_OK);
-                return new FileAccountKeyProvider(accountKeyDir, new AccountKeyGenerator());
-            } catch (e: unknown) {
-                throw new Error(`Can't access '${accountKeyDir}'`);
-            }
+            assertPathIsDir(accountKeyDir);
+            assertPathIsWritable(accountKeyDir);
+            return new FileAccountKeyProvider(accountKeyDir, new AccountKeyGenerator());
         } else {
             return new AccountKeyGenerator();
         }

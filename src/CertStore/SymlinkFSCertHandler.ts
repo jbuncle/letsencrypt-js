@@ -1,9 +1,12 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { existsSync, readFileSync, symlinkSync, writeFileSync } from "fs";
+import { existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "fs";
 import type { CertResult } from "../CertGenerator/CertResult";
 import type { CertStoreI } from "./CertStore";
 import { format } from "util";
-import { join, relative } from "path";
+import { dirname, join, relative } from "path";
+import { assertPathIsDir, assertPathIsWritable } from "../Util/Assert";
+import type { LoggerInterface } from "@jbuncle/logging-js";
+import { Logger } from "@jbuncle/logging-js";
 
 /**
  * CertHandler that stores certs in a directory and symlinks to them.
@@ -15,6 +18,8 @@ export class SymlinkFSCertHandler implements CertStoreI {
     private static readonly KEY_NAME: string = `key.pem`;
 
     private static readonly CA_NAME: string = `chain.pem`;
+
+    private readonly logger: LoggerInterface = Logger.getLogger(SymlinkFSCertHandler.name);
 
     public constructor(
         private readonly storeDirFormat: string,
@@ -42,6 +47,7 @@ export class SymlinkFSCertHandler implements CertStoreI {
      */
     public hasCert(commonName: string): boolean {
         // Check we have symlink and the actual cert
+
         return existsSync(this.getCertLinkPath(commonName)) && existsSync(this.getCertRealPath(commonName));
     }
 
@@ -58,10 +64,22 @@ export class SymlinkFSCertHandler implements CertStoreI {
         const keyPath: string = join(storeDir, SymlinkFSCertHandler.KEY_NAME);
         const caPath: string = join(storeDir, SymlinkFSCertHandler.CA_NAME);
 
+        // Mkdir dir
+        if (!existsSync(storeDir)) {
+            const parentDir = dirname(storeDir);
+            assertPathIsDir(parentDir);
+            assertPathIsWritable(parentDir);
+            this.logger.debug(`Creating directory '${storeDir}'`);
+            mkdirSync(storeDir);
+        } else {
+            assertPathIsDir(storeDir);
+            assertPathIsWritable(storeDir);
+        }
+
         // Write to fs
-        writeFileSync(certPath, result.certificate);
-        writeFileSync(keyPath, result.privateKey);
-        writeFileSync(caPath, result.caCert);
+        this.writeFileSync(certPath, result.certificate);
+        this.writeFileSync(keyPath, result.privateKey);
+        this.writeFileSync(caPath, result.caCert);
 
         // Create symlinks
         this.createRelativeSymlink(certPath, this.certFilePathFormat, commonName);
@@ -71,6 +89,11 @@ export class SymlinkFSCertHandler implements CertStoreI {
         if (this.dhparamFile !== undefined && this.dhparamFilePathFormat !== undefined && existsSync(this.dhparamFile)) {
             this.createRelativeSymlink(this.dhparamFile, this.dhparamFilePathFormat, commonName);
         }
+    }
+
+    private writeFileSync(filepath: string, content: Buffer | string): void {
+        this.logger.debug(`Writing to '${filepath}'`);
+        writeFileSync(filepath, content);
     }
 
     /**
@@ -93,6 +116,7 @@ export class SymlinkFSCertHandler implements CertStoreI {
     private createRelativeSymlink(linkTargetPath: string, linkPathFormat: string, commonName: string): void {
         const linkPath: string = format(linkPathFormat, commonName);
         const relativePath: string = relative(linkTargetPath, linkPath);
+        this.logger.debug(`Creating symlink '${linkTargetPath}' => '${relativePath}'`);
         symlinkSync(linkTargetPath, relativePath);
     }
 

@@ -7,7 +7,6 @@ export const assertPathIsWritable = (dir: string): void => {
     } catch (e: unknown) {
         throw new Error(`Path '${dir}' is not writable`);
     }
-
 }
 
 export const assertPathIsDir = (dir: string): void => {
