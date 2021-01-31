@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { existsSync, mkdirSync, readFileSync, symlinkSync, writeFileSync } from "fs";
+import { existsSync, readFileSync, promises as fs } from "fs";
 import type { CertResult } from "../CertGenerator/CertResult";
 import type { CertStoreI } from "./CertStore";
 import { format } from "util";
@@ -46,7 +46,7 @@ export class SymlinkFSCertHandler implements CertStoreI {
      * @param commonName 
      */
     public hasCert(commonName: string): boolean {
-        // Check we have symlink and the actual cert
+        // Check we have both the symlink and the actual cert
 
         return existsSync(this.getCertLinkPath(commonName)) && existsSync(this.getCertRealPath(commonName));
     }
@@ -57,7 +57,7 @@ export class SymlinkFSCertHandler implements CertStoreI {
      * @param commonName The domain name.
      * @param result The data to store
      */
-    public store(commonName: string, result: CertResult): void {
+    public async store(commonName: string, result: CertResult): Promise<void> {
         const storeDir: string = this.getCertsDir(commonName);
 
         const certPath: string = this.getCertRealPath(commonName);
@@ -70,30 +70,37 @@ export class SymlinkFSCertHandler implements CertStoreI {
             assertPathIsDir(parentDir);
             assertPathIsWritable(parentDir);
             this.logger.debug(`Creating directory '${storeDir}'`);
-            mkdirSync(storeDir);
+            await fs.mkdir(storeDir);
         } else {
             assertPathIsDir(storeDir);
             assertPathIsWritable(storeDir);
         }
 
-        // Write to fs
-        this.writeFileSync(certPath, result.certificate);
-        this.writeFileSync(keyPath, result.privateKey);
-        this.writeFileSync(caPath, result.caCert);
-
-        // Create symlinks
-        this.createRelativeSymlink(certPath, this.certFilePathFormat, commonName);
-        this.createRelativeSymlink(keyPath, this.keyFilePathFormat, commonName);
-        this.createRelativeSymlink(caPath, this.caFilePathFormat, commonName);
+        const promises: Promise<unknown>[] = [
+            this.createAndLink(certPath, result.certificate, format(this.certFilePathFormat, commonName)),
+            this.createAndLink(keyPath, result.privateKey, format(this.keyFilePathFormat, commonName)),
+            this.createAndLink(caPath, result.caCert, format(this.caFilePathFormat, commonName)),
+        ];
 
         if (this.dhparamFile !== undefined && this.dhparamFilePathFormat !== undefined && existsSync(this.dhparamFile)) {
-            this.createRelativeSymlink(this.dhparamFile, this.dhparamFilePathFormat, commonName);
+            promises.push(this.symlink(this.dhparamFile, format(this.dhparamFilePathFormat, commonName)));
         }
+        // Wait for promises to finish
+        await this.all(...promises);
     }
 
-    private writeFileSync(filepath: string, content: Buffer | string): void {
+    private async all(...promises: Promise<unknown>[]): Promise<unknown> {
+        return Promise.all(promises);
+    }
+
+    private async createAndLink(realPath: string, content: string, linkPath: string): Promise<void> {
+        await this.writeFileSync(realPath, content);
+        await this.symlink(realPath, linkPath);
+    }
+
+    private async writeFileSync(filepath: string, content: Buffer | string): Promise<void> {
         this.logger.debug(`Writing to '${filepath}'`);
-        writeFileSync(filepath, content);
+        return fs.writeFile(filepath, content);
     }
 
     /**
@@ -106,18 +113,10 @@ export class SymlinkFSCertHandler implements CertStoreI {
         return join(storeDir, SymlinkFSCertHandler.CERT_NAME);
     }
 
-    /**
-     * Create symlink as a relative path.
-     *
-     * @param linkTargetPath 
-     * @param linkPathFormat 
-     * @param commonName 
-     */
-    private createRelativeSymlink(linkTargetPath: string, linkPathFormat: string, commonName: string): void {
-        const linkPath: string = format(linkPathFormat, commonName);
+    private async symlink(linkTargetPath: string, linkPath: string): Promise<void> {
         const relativePath: string = relative(linkTargetPath, linkPath);
         this.logger.debug(`Creating symlink '${linkTargetPath}' => '${relativePath}'`);
-        symlinkSync(linkTargetPath, relativePath);
+        return fs.symlink(linkTargetPath, relativePath);
     }
 
     /**
