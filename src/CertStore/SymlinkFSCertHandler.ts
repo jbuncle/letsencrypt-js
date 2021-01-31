@@ -1,6 +1,5 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Stats } from "fs";
-import { exists } from "fs";
 import { existsSync, promises as fs } from "fs";
 import type { CertResult } from "../CertGenerator/CertResult";
 import type { CertStoreI } from "./CertStore";
