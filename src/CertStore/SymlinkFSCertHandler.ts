@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Stats } from "fs";
+import { exists } from "fs";
 import { existsSync, promises as fs } from "fs";
 import type { CertResult } from "../CertGenerator/CertResult";
 import type { CertStoreI } from "./CertStore";
@@ -48,14 +49,12 @@ export class SymlinkFSCertHandler implements CertStoreI {
      */
     public async hasCert(commonName: string): Promise<boolean> {
         // Check we have both the symlink and the actual cert
-
         return existsSync(this.getCertLinkPath(commonName)) && existsSync(this.getCertRealPath(commonName));
     }
 
     public async prepare(commonName: string): Promise<void> {
         const storeDir: string = this.getCertsDir(commonName);
 
-        // Mkdir dir
         if (!existsSync(storeDir)) {
             const parentDir = dirname(storeDir);
             assertPathIsDir(parentDir);
@@ -64,12 +63,23 @@ export class SymlinkFSCertHandler implements CertStoreI {
             await fs.mkdir(storeDir);
         } else {
             assertPathIsDir(storeDir);
-            assertPathIsWritable(storeDir);
         }
+        // Ensure path is writable
+        assertPathIsWritable(storeDir);
 
-        assertPathIsWritable(format(this.certLinkPathFormat, commonName));
-        assertPathIsWritable(format(this.keyLinkPathFormat, commonName));
-        assertPathIsWritable(format(this.caLinkPathFormat, commonName));
+        const certLinkPath: string = format(this.certLinkPathFormat, commonName);
+        const keyLinkPath: string = format(this.keyLinkPathFormat, commonName);
+        const caLinkPath: string = format(this.caLinkPathFormat, commonName);
+
+        if (existsSync(certLinkPath)) {
+            assertPathIsWritable(certLinkPath);
+        }
+        if (existsSync(keyLinkPath)) {
+            assertPathIsWritable(keyLinkPath);
+        }
+        if (existsSync(caLinkPath)) {
+            assertPathIsWritable(caLinkPath);
+        }
     }
 
     /**
