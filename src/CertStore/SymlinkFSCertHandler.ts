@@ -1,5 +1,6 @@
 /* eslint-disable @typescript-eslint/naming-convention */
-import { existsSync, readFileSync, promises as fs } from "fs";
+import type { Stats } from "fs";
+import { existsSync, promises as fs } from "fs";
 import type { CertResult } from "../CertGenerator/CertResult";
 import type { CertStoreI } from "./CertStore";
 import { format } from "util";
@@ -23,9 +24,9 @@ export class SymlinkFSCertHandler implements CertStoreI {
 
     public constructor(
         private readonly storeDirFormat: string,
-        private readonly certFilePathFormat: string,
-        private readonly keyFilePathFormat: string,
-        private readonly caFilePathFormat: string,
+        private readonly certLinkPathFormat: string,
+        private readonly keyLinkPathFormat: string,
+        private readonly caLinkPathFormat: string,
         private readonly dhparamFile?: string | undefined,
         private readonly dhparamFilePathFormat?: string | undefined,
     ) { }
@@ -35,9 +36,9 @@ export class SymlinkFSCertHandler implements CertStoreI {
      *
      * @param commonName 
      */
-    public getCert(commonName: string): Buffer {
+    public async getCert(commonName: string): Promise<Buffer> {
         const certPath: string = this.getCertRealPath(commonName);
-        return readFileSync(certPath);
+        return fs.readFile(certPath);
     }
 
     /**
@@ -45,10 +46,30 @@ export class SymlinkFSCertHandler implements CertStoreI {
      *
      * @param commonName 
      */
-    public hasCert(commonName: string): boolean {
+    public async hasCert(commonName: string): Promise<boolean> {
         // Check we have both the symlink and the actual cert
 
         return existsSync(this.getCertLinkPath(commonName)) && existsSync(this.getCertRealPath(commonName));
+    }
+
+    public async prepare(commonName: string): Promise<void> {
+        const storeDir: string = this.getCertsDir(commonName);
+
+        // Mkdir dir
+        if (!existsSync(storeDir)) {
+            const parentDir = dirname(storeDir);
+            assertPathIsDir(parentDir);
+            assertPathIsWritable(parentDir);
+            this.logger.debug(`Creating directory '${storeDir}'`);
+            await fs.mkdir(storeDir);
+        } else {
+            assertPathIsDir(storeDir);
+            assertPathIsWritable(storeDir);
+        }
+
+        assertPathIsWritable(format(this.certLinkPathFormat, commonName));
+        assertPathIsWritable(format(this.keyLinkPathFormat, commonName));
+        assertPathIsWritable(format(this.caLinkPathFormat, commonName));
     }
 
     /**
@@ -64,22 +85,10 @@ export class SymlinkFSCertHandler implements CertStoreI {
         const keyPath: string = join(storeDir, SymlinkFSCertHandler.KEY_NAME);
         const caPath: string = join(storeDir, SymlinkFSCertHandler.CA_NAME);
 
-        // Mkdir dir
-        if (!existsSync(storeDir)) {
-            const parentDir = dirname(storeDir);
-            assertPathIsDir(parentDir);
-            assertPathIsWritable(parentDir);
-            this.logger.debug(`Creating directory '${storeDir}'`);
-            await fs.mkdir(storeDir);
-        } else {
-            assertPathIsDir(storeDir);
-            assertPathIsWritable(storeDir);
-        }
-
         const promises: Promise<unknown>[] = [
-            this.createAndLink(certPath, result.certificate, format(this.certFilePathFormat, commonName)),
-            this.createAndLink(keyPath, result.privateKey, format(this.keyFilePathFormat, commonName)),
-            this.createAndLink(caPath, result.caCert, format(this.caFilePathFormat, commonName)),
+            this.createAndLink(certPath, result.certificate, format(this.certLinkPathFormat, commonName)),
+            this.createAndLink(keyPath, result.privateKey, format(this.keyLinkPathFormat, commonName)),
+            this.createAndLink(caPath, result.caCert, format(this.caLinkPathFormat, commonName)),
         ];
 
         if (this.dhparamFile !== undefined && this.dhparamFilePathFormat !== undefined && existsSync(this.dhparamFile)) {
@@ -115,8 +124,21 @@ export class SymlinkFSCertHandler implements CertStoreI {
 
     private async symlink(linkTargetPath: string, linkPath: string): Promise<void> {
         const relativePath: string = relative(linkTargetPath, linkPath);
+
+        if (existsSync(linkPath)) {
+            // Path exists
+            const stat: Stats = await fs.lstat(linkPath);
+            if (stat.isSymbolicLink() && await fs.readlink(linkPath) === relativePath) {
+                // Already a symlink pointing to the correct path - nothing to do
+                return;
+            }
+            // Not a symlink or is pointing to the wrong target (and therefore needs removing before we update)
+            this.logger.debug(`Removing bad file at '${linkPath}'`);
+            await fs.unlink(linkPath);
+        }
         this.logger.debug(`Creating symlink '${linkTargetPath}' => '${relativePath}'`);
         return fs.symlink(linkTargetPath, relativePath);
+
     }
 
     /**
@@ -129,6 +151,6 @@ export class SymlinkFSCertHandler implements CertStoreI {
     }
 
     private getCertLinkPath(commonName: string): string {
-        return format(this.certFilePathFormat, commonName);
+        return format(this.certLinkPathFormat, commonName);
     }
 }

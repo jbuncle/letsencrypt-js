@@ -2,9 +2,11 @@ import type { CertResult } from "../CertGenerator/CertResult";
 
 export interface CertStoreI {
 
-    getCert: (commonName: string) => Buffer;
+    prepare: (commonName: string) => Promise<void>;
     
-    store: (commonName: string, result: CertResult) => void;
+    getCert: (commonName: string) => Promise<Buffer>;
+    
+    store: (commonName: string, result: CertResult) => Promise<void>;
 
-    hasCert: (commonName: string) => boolean;
+    hasCert: (commonName: string) => Promise<boolean>;
 }

@@ -34,15 +34,16 @@ export class CertHandler {
     public async generateOrRenewCertificate(commonName: string, accountEmail: string): Promise<boolean> {
         // TODO: add async protection - to avoid 2 processes generating same for same domain
         // Check if certificate exists or needs renewal
-        if ((!this.certStore.hasCert(commonName) || this.renewalRequired(commonName)) && !this.inProgress(commonName)) {
+        if ((!(await this.certStore.hasCert(commonName)) || await this.renewalRequired(commonName)) && !this.inProgress(commonName)) {
 
             this.inProgressDomains[commonName] = true;
             try {
+                await this.certStore.prepare(commonName);
                 const result: CertResult = await this.certGenerator.generate({
                     commonName,
                 }, accountEmail);
 
-                this.certStore.store(commonName, result);
+                await this.certStore.store(commonName, result);
             } finally {
                 this.inProgressDomains[commonName] = false;
             }
@@ -58,8 +59,8 @@ export class CertHandler {
         return false;
     }
 
-    private renewalRequired(commonName: string): boolean {
-        const crtPem: Buffer = this.certStore.getCert(commonName);
+    private async renewalRequired(commonName: string): Promise<boolean> {
+        const crtPem: Buffer = await this.certStore.getCert(commonName);
         const pemUtility: PemUtility = new PemUtility();
 
         return pemUtility.getDaysTillExpiry(String(crtPem)) < this.expiryThesholdDays;
