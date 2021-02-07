@@ -28,7 +28,7 @@ export class SymlinkFSCertHandler implements CertStoreI {
         private readonly keyLinkPathFormat: string,
         private readonly caLinkPathFormat: string,
         private readonly dhparamFile?: string | undefined,
-        private readonly dhparamFilePathFormat?: string | undefined,
+        private readonly dhparamLinkPathFormat?: string | undefined,
     ) { }
 
     /**
@@ -79,6 +79,9 @@ export class SymlinkFSCertHandler implements CertStoreI {
         if (existsSync(caLinkPath)) {
             assertPathIsWritable(caLinkPath);
         }
+
+        // Fix symlinks if needed
+        await this.fixLinks(commonName);
     }
 
     /**
@@ -100,14 +103,50 @@ export class SymlinkFSCertHandler implements CertStoreI {
             this.createAndLink(caPath, result.caCert, format(this.caLinkPathFormat, commonName)),
         ];
 
-        if (this.dhparamFile !== undefined && this.dhparamFilePathFormat !== undefined && existsSync(this.dhparamFile)) {
-            promises.push(this.symlink(this.dhparamFile, format(this.dhparamFilePathFormat, commonName)));
+        if (this.dhparamFile !== undefined && this.dhparamLinkPathFormat !== undefined && existsSync(this.dhparamFile)) {
+            const dhparamLinkPath: string = format(this.dhparamLinkPathFormat, commonName);
+            promises.push(this.symlink(this.dhparamFile, dhparamLinkPath));
         }
+
         // Wait for promises to finish
         await this.all(...promises);
     }
 
-    private async all(...promises: Promise<unknown>[]): Promise<unknown> {
+    private async fixLinks(commonName: string): Promise<unknown[]> {
+        const storeDir: string = this.getCertsDir(commonName);
+
+        const promises: Promise<unknown>[] = [];
+
+        const certPath: string = this.getCertRealPath(commonName);
+        const certLinkPath = format(this.certLinkPathFormat, commonName);
+        if (existsSync(certPath) && !(await this.checkSymlink(certLinkPath))) {
+            promises.push(this.symlink(certPath, certLinkPath));
+        }
+
+        const keyLinkPath: string = format(this.keyLinkPathFormat, commonName);
+        const keyPath: string = join(storeDir, SymlinkFSCertHandler.KEY_NAME);
+        if (existsSync(keyPath) && !(await this.checkSymlink(keyLinkPath))) {
+            promises.push(this.symlink(keyPath, keyLinkPath));
+        }
+
+        const caLinkPath: string = format(this.caLinkPathFormat, commonName);
+        const caPath: string = join(storeDir, SymlinkFSCertHandler.CA_NAME);
+        if (existsSync(caPath) && !(await this.checkSymlink(caLinkPath))) {
+            promises.push(this.symlink(caPath, caLinkPath));
+        }
+
+        if (this.dhparamFile !== undefined && this.dhparamLinkPathFormat !== undefined) {
+            const dhparamLinkPath: string = format(this.dhparamLinkPathFormat, commonName);
+            if (existsSync(this.dhparamFile) && !(await this.checkSymlink(dhparamLinkPath))) {
+                promises.push(this.symlink(this.dhparamFile, dhparamLinkPath));
+            }
+        }
+
+        // Wait for promises to finish
+        return this.all(...promises);
+    }
+
+    private async all(...promises: Promise<unknown>[]): Promise<unknown[]> {
         return Promise.all(promises);
     }
 
@@ -131,23 +170,50 @@ export class SymlinkFSCertHandler implements CertStoreI {
         return join(storeDir, SymlinkFSCertHandler.CERT_NAME);
     }
 
-    private async symlink(linkTargetPath: string, linkPath: string): Promise<void> {
-        const relativePath: string = relative(linkTargetPath, linkPath);
+    private async symlink(targetFilePath: string, linkPath: string): Promise<void> {
+        const relativeTargetPath: string = relative(dirname(linkPath), targetFilePath);
 
         if (existsSync(linkPath)) {
             // Path exists
             const stat: Stats = await fs.lstat(linkPath);
-            if (stat.isSymbolicLink() && await fs.readlink(linkPath) === relativePath) {
+            if (stat.isSymbolicLink() && await fs.readlink(linkPath) === relativeTargetPath) {
+                this.logger.debug(`Symlink already exists for '${linkPath}' => '${relativeTargetPath}'`);
                 // Already a symlink pointing to the correct path - nothing to do
                 return;
             }
             // Not a symlink or is pointing to the wrong target (and therefore needs removing before we update)
-            this.logger.debug(`Removing bad file at '${linkPath}'`);
+            this.logger.info(`Removing bad file at '${linkPath}'`);
             await fs.unlink(linkPath);
         }
-        this.logger.debug(`Creating symlink '${linkTargetPath}' => '${relativePath}'`);
-        return fs.symlink(linkTargetPath, relativePath);
 
+        this.logger.info(`Creating symlink '${linkPath}' => '${relativeTargetPath}'`);
+
+        try {
+            await fs.symlink(relativeTargetPath, linkPath);
+        } catch (e: unknown) {
+            const error: Error = e as Error;
+            throw new Error(`Error creating symlink '${linkPath}' => '${relativeTargetPath}', due to '${error.message}'`);
+        }
+    }
+
+    private async checkSymlink(linkPath: string): Promise<boolean> {
+        // Check link exists
+        if (!existsSync(linkPath)) {
+            return false;
+        }
+        // Check if path is a symlink
+        const stat: Stats = await fs.lstat(linkPath);
+        if (!stat.isSymbolicLink()) {
+            return false;
+        }
+
+        // Check if link target is valid
+        const target: string = await fs.readlink(linkPath);
+        if (!existsSync(target)) {
+            return false;
+        }
+        // All checks passed
+        return true;
     }
 
     /**

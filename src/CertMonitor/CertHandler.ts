@@ -32,22 +32,23 @@ export class CertHandler {
      * @param accountEmail 
      */
     public async generateOrRenewCertificate(commonName: string, accountEmail: string): Promise<boolean> {
-        // TODO: add async protection - to avoid 2 processes generating same for same domain
-        // Check if certificate exists or needs renewal
-        if ((!(await this.certStore.hasCert(commonName)) || await this.renewalRequired(commonName)) && !this.inProgress(commonName)) {
 
-            this.inProgressDomains[commonName] = true;
-            try {
-                await this.certStore.prepare(commonName);
+        this.inProgressDomains[commonName] = true;
+        await this.certStore.prepare(commonName);
+        try {
+            // Check if certificate exists or needs renewal
+            if ((!(await this.certStore.hasCert(commonName)) || await this.renewalRequired(commonName)) && !this.inProgress(commonName)) {
+
                 const result: CertResult = await this.certGenerator.generate({
                     commonName,
                 }, accountEmail);
 
                 await this.certStore.store(commonName, result);
-            } finally {
-                this.inProgressDomains[commonName] = false;
+
+                return true;
             }
-            return true;
+        } finally {
+            this.inProgressDomains[commonName] = false;
         }
         return false;
     }
