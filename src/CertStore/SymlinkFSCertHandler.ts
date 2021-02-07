@@ -177,7 +177,6 @@ export class SymlinkFSCertHandler implements CertStoreI {
             // Path exists
             const stat: Stats = await fs.lstat(linkPath);
             if (stat.isSymbolicLink() && await fs.readlink(linkPath) === relativeTargetPath) {
-                this.logger.debug(`Symlink already exists for '${linkPath}' => '${relativeTargetPath}'`);
                 // Already a symlink pointing to the correct path - nothing to do
                 return;
             }
