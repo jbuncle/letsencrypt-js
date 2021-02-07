@@ -33,22 +33,29 @@ export class CertHandler {
      */
     public async generateOrRenewCertificate(commonName: string, accountEmail: string): Promise<boolean> {
 
-        this.inProgressDomains[commonName] = true;
-        await this.certStore.prepare(commonName);
-        try {
-            // Check if certificate exists or needs renewal
-            if ((!(await this.certStore.hasCert(commonName)) || await this.renewalRequired(commonName)) && !this.inProgress(commonName)) {
-
-                const result: CertResult = await this.certGenerator.generate({
-                    commonName,
-                }, accountEmail);
-
-                await this.certStore.store(commonName, result);
-
-                return true;
+        if (!this.inProgress(commonName)) {
+            this.inProgressDomains[commonName] = true;
+            await this.certStore.prepare(commonName);
+            try {
+                // Check if certificate exists or needs renewal
+                return await this.doRenewal(commonName, accountEmail);
+            } finally {
+                this.inProgressDomains[commonName] = false;
             }
-        } finally {
-            this.inProgressDomains[commonName] = false;
+        }
+        return false;
+    }
+
+    private async doRenewal(commonName: string, accountEmail: string): Promise<boolean> {
+        if (!(await this.certStore.hasCert(commonName)) || await this.renewalRequired(commonName)) {
+
+            const result: CertResult = await this.certGenerator.generate({
+                commonName,
+            }, accountEmail);
+
+            await this.certStore.store(commonName, result);
+
+            return true;
         }
         return false;
     }
