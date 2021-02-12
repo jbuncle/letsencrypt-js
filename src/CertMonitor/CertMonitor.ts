@@ -60,7 +60,7 @@ export class CertMonitor implements CertMonitorI {
         }
 
         const ms: number = frequencyMinutes * 60000;
-        // TODO: don't use interval as slow operations can result in overalapping
+
         this.intervalTimeout = new SynchronousRepeat(async() => {
             // Run in task pool to avoid going crazy with tasks
             const tasks: Generator<Task<boolean>> = this.createTasks();

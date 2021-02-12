@@ -35,7 +35,6 @@ export class CertHandler {
 
         if (!this.inProgress(commonName)) {
             this.inProgressDomains[commonName] = true;
-            await this.certStore.prepare(commonName);
             try {
                 // Check if certificate exists or needs renewal
                 return await this.doRenewal(commonName, accountEmail);
@@ -47,6 +46,7 @@ export class CertHandler {
     }
 
     private async doRenewal(commonName: string, accountEmail: string): Promise<boolean> {
+        await this.certStore.prepare(commonName);
         if (!(await this.certStore.hasCert(commonName)) || await this.renewalRequired(commonName)) {
 
             const result: CertResult = await this.certGenerator.generate({
