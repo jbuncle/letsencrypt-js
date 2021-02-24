@@ -11,7 +11,7 @@ import { AccountKeyGenerator } from "../Client/AccountKeyProviders/AccountKeyGen
 import { FileAccountKeyProvider } from "../Client/AccountKeyProviders/FileAccountKeyProvider";
 import { ClientFactory } from "../Client/ClientFactory";
 import { WebRootChallengeHandlerFactory } from "../HandlerFactories";
-import { assertPathIsDir, assertPathIsWritable } from "../Util/Assert";
+import { Assert } from "@jbuncle/core-js";
 
 /**
  * Factory for creating certs for a common Nginx server configuration.
@@ -90,11 +90,11 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
     public create(staging: boolean): CertMonitorI {
 
-        assertPathIsDir(this.accountKeyDir);
-        assertPathIsDir(this.webRoot);
+        Assert.assertPathIsDir(this.accountKeyDir);
+        Assert.assertPathIsDir(this.webRoot);
 
-        assertPathIsWritable(this.accountKeyDir);
-        assertPathIsWritable(this.webRoot);
+        Assert.assertPathWriteable(this.accountKeyDir);
+        Assert.assertPathWriteable(this.webRoot);
 
         const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(this.accountKeyDir);
         const clientFactory: ClientFactory = new ClientFactory(accountKeyProvider, staging);
@@ -117,8 +117,8 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
     private createAccountKeyProvider(accountKeyDir: string | undefined): AccountKeyProviderI {
         if (accountKeyDir !== undefined) {
-            assertPathIsDir(accountKeyDir);
-            assertPathIsWritable(accountKeyDir);
+            Assert.assertPathIsDir(accountKeyDir);
+            Assert.assertPathWriteable(accountKeyDir);
             return new FileAccountKeyProvider(accountKeyDir, new AccountKeyGenerator());
         } else {
             return new AccountKeyGenerator();
