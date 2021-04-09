@@ -1,5 +1,7 @@
+import { BigTimeout } from "./BigTimeout";
+
 /**
- * Repeat an operation after specified delay, synchonously -
+ * Repeat an operation after specified delay, synchronously -
  * i.e. without overlapping (in the case of an operation which takes longer than the delay).
  * 
  * Note, if the callback contains asynchronous operations, then this execution time won't be considered.
@@ -8,7 +10,7 @@ export class SynchronousRepeat {
 
     private running: boolean = false;
 
-    private currentTimeout: NodeJS.Timeout | undefined;
+    private currentTimeout: BigTimeout | undefined;
 
 
     public constructor(
@@ -35,7 +37,7 @@ export class SynchronousRepeat {
         this.running = false;
         if (this.currentTimeout) {
             // Stop existing timeout
-            clearTimeout(this.currentTimeout);
+            this.currentTimeout.stop();
         }
     }
 
@@ -68,7 +70,7 @@ export class SynchronousRepeat {
     private async createTimeout(delay: number): Promise<void> {
         return new Promise((resolve, reject) => {
 
-            this.currentTimeout = setTimeout(() => {
+            this.currentTimeout = BigTimeout.setTimeout(() => {
                 try {
                     resolve();
                 } catch (e: unknown) {
