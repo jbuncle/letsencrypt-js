@@ -35,7 +35,7 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
     private dhparamsPathFormat: string = `/etc/nginx/certs/%s.dhparam.pem `;
 
     public constructor(
-        private readonly expiryThesholdDays: number = 10
+        private readonly expiryThesholdDays: number = 30
     ) { }
 
     public setAccountKeyDir(accountKeyDir: string): NginxCertMonitorFactory {

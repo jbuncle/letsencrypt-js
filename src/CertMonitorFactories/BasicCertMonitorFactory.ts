@@ -24,7 +24,7 @@ export class BasicCertMonitorFactory implements CertMonitorFactoryI {
         private readonly keyFilePathFormat: string,
         private readonly caFilePathFormat: string,
         private readonly accountKeyDir?: string,
-        private readonly expiryThesholdDays: number = 10
+        private readonly expiryThesholdDays: number = 30
     ) { }
 
     public create(staging: boolean): CertMonitorI {
