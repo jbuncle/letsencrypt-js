@@ -1,7 +1,7 @@
 import type { Task } from "./Task";
 
 /**
- * Runs a number of asynchronous tasks in batches.
+ * Runs a number of asynchronous tasks in batches of a predefined size.
  */
 export class TaskBatcher<T> {
 

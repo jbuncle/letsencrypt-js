@@ -32,10 +32,10 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
     private dhparamsFile: string = `/etc/nginx/certs/dhparam.pem`;
 
-    private dhparamsPathFormat: string = `/etc/nginx/certs/%s.dhparam.pem `;
+    private dhparamsPathFormat: string = `/etc/nginx/certs/%s.dhparam.pem`;
 
     public constructor(
-        private readonly expiryThesholdDays: number = 30
+        private readonly expiryThresholdDays: number = 30
     ) { }
 
     public setAccountKeyDir(accountKeyDir: string): NginxCertMonitorFactory {
@@ -69,7 +69,7 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
     }
 
     /**
-     * Set format for domain DH params file.
+     * Set format for domain DH params file path.
      *
      * @param dhparamsPathFormat
      */
@@ -110,7 +110,11 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
             this.dhparamsPathFormat,
         );
 
-        const certHandler: CertHandler = new CertHandler(certGenerator, certStore, this.expiryThesholdDays);
+        const certHandler: CertHandler = new CertHandler(
+            certGenerator,
+            certStore, 
+            this.expiryThresholdDays
+        );
 
         return new CertMonitor(certHandler);
     }

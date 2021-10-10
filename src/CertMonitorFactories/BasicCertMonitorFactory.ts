@@ -24,7 +24,7 @@ export class BasicCertMonitorFactory implements CertMonitorFactoryI {
         private readonly keyFilePathFormat: string,
         private readonly caFilePathFormat: string,
         private readonly accountKeyDir?: string,
-        private readonly expiryThesholdDays: number = 30
+        private readonly expiryThresholdDays: number = 30
     ) { }
 
     public create(staging: boolean): CertMonitorI {
@@ -38,7 +38,7 @@ export class BasicCertMonitorFactory implements CertMonitorFactoryI {
             this.keyFilePathFormat,
             this.caFilePathFormat
         );
-        const certHandler: CertHandler = new CertHandler(certGenerator, certStore, this.expiryThesholdDays);
+        const certHandler: CertHandler = new CertHandler(certGenerator, certStore, this.expiryThresholdDays);
 
         return new CertMonitor(certHandler);
     }

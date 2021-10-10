@@ -17,12 +17,12 @@ export class CertHandler {
      * 
      * @param certGenerator - CertGenerator that fetches the certificate from the certificate authority
      * @param certStore
-     * @param expiryThesholdDays
+     * @param expiryThresholdDays
      */
     public constructor(
         private readonly certGenerator: CertGenerator,
         private readonly certStore: CertStoreI,
-        private readonly expiryThesholdDays: number = 5,
+        private readonly expiryThresholdDays: number = 5,
     ) { }
 
     /**
@@ -71,7 +71,7 @@ export class CertHandler {
         const crtPem: Buffer = await this.certStore.getCert(commonName);
         const pemUtility: PemUtility = new PemUtility();
 
-        return pemUtility.getDaysTillExpiry(String(crtPem)) < this.expiryThesholdDays;
+        return pemUtility.getDaysTillExpiry(String(crtPem)) < this.expiryThresholdDays;
     }
 
 }
