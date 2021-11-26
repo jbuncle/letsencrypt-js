@@ -11,7 +11,7 @@ import { AccountKeyGenerator } from "../Client/AccountKeyProviders/AccountKeyGen
 import { FileAccountKeyProvider } from "../Client/AccountKeyProviders/FileAccountKeyProvider";
 import { ClientFactory } from "../Client/ClientFactory";
 import { WebRootChallengeHandlerFactory } from "../HandlerFactories";
-import { Assert } from "@jbuncle/core-js";
+import { accessSync, constants, statSync } from "fs";
 
 /**
  * Factory for creating certs for a common Nginx server configuration.
@@ -38,32 +38,32 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
         private readonly expiryThresholdDays: number = 30
     ) { }
 
-    public setAccountKeyDir(accountKeyDir: string): NginxCertMonitorFactory {
+    public setAccountKeyDir(accountKeyDir: string): this {
         this.accountKeyDir = accountKeyDir;
         return this;
     }
 
-    public setWebRoot(webRoot: string): NginxCertMonitorFactory {
+    public setWebRoot(webRoot: string): this {
         this.webRoot = webRoot;
         return this;
     }
 
-    public setCertsDir(certsDir: string): NginxCertMonitorFactory {
+    public setCertsDir(certsDir: string): this {
         this.certsDir = certsDir;
         return this;
     }
 
-    public setCertFilePathFormat(certFilePathFormat: string): NginxCertMonitorFactory {
+    public setCertFilePathFormat(certFilePathFormat: string): this {
         this.certFilePathFormat = certFilePathFormat;
         return this;
     }
 
-    public setKeyFilePathFormat(keyFilePathFormat: string): NginxCertMonitorFactory {
+    public setKeyFilePathFormat(keyFilePathFormat: string): this {
         this.keyFilePathFormat = keyFilePathFormat;
         return this;
     }
 
-    public setCaFilePathFormat(caFilePathFormat: string): NginxCertMonitorFactory {
+    public setCaFilePathFormat(caFilePathFormat: string): this {
         this.caFilePathFormat = caFilePathFormat;
         return this;
     }
@@ -73,7 +73,7 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
      *
      * @param dhparamsPathFormat
      */
-    public setDhparamsPathFormat(dhparamsPathFormat: string): NginxCertMonitorFactory {
+    public setDhparamsPathFormat(dhparamsPathFormat: string): this {
         this.dhparamsPathFormat = dhparamsPathFormat;
         return this;
     }
@@ -83,18 +83,21 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
      *
      * @param dhparamsFile 
      */
-    public setDhparamsFile(dhparamsFile: string): NginxCertMonitorFactory {
+    public setDhparamsFile(dhparamsFile: string): this {
         this.dhparamsFile = dhparamsFile;
         return this;
     }
 
     public create(staging: boolean): CertMonitorI {
 
-        Assert.assertPathIsDir(this.accountKeyDir);
-        Assert.assertPathIsDir(this.webRoot);
-
-        Assert.assertPathWriteable(this.accountKeyDir);
-        Assert.assertPathWriteable(this.webRoot);
+        if (!statSync(this.accountKeyDir).isDirectory()) {
+            throw new Error(`Directory '${this.accountKeyDir}' doesn't exist`);
+        }
+        if (!statSync(this.webRoot).isDirectory()) {
+            throw new Error(`Directory '${this.webRoot}' doesn't exist`);
+        }
+        accessSync(this.accountKeyDir, constants.W_OK);
+        accessSync(this.webRoot, constants.W_OK);
 
         const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(this.accountKeyDir);
         const clientFactory: ClientFactory = new ClientFactory(accountKeyProvider, staging);
@@ -121,8 +124,11 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
     private createAccountKeyProvider(accountKeyDir: string | undefined): AccountKeyProviderI {
         if (accountKeyDir !== undefined) {
-            Assert.assertPathIsDir(accountKeyDir);
-            Assert.assertPathWriteable(accountKeyDir);
+            if (!statSync(accountKeyDir).isDirectory()) {
+                throw new Error(`Directory '${accountKeyDir}' doesn't exist`);
+            }
+            accessSync(accountKeyDir, constants.W_OK);
+
             return new FileAccountKeyProvider(accountKeyDir, new AccountKeyGenerator());
         } else {
             return new AccountKeyGenerator();

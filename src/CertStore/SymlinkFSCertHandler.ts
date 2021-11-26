@@ -1,11 +1,10 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Stats } from "fs";
-import { existsSync, promises as fs } from "fs";
+import { accessSync, constants, existsSync, promises as fs } from "fs";
 import type { CertResult } from "../CertGenerator/CertResult";
 import type { CertStoreI } from "./CertStore";
 import { format } from "util";
 import { dirname, join, relative } from "path";
-import { Assert } from "@jbuncle/core-js";
 import type { LoggerInterface } from "@jbuncle/logging-js";
 import { Logger } from "@jbuncle/logging-js";
 
@@ -56,28 +55,25 @@ export class SymlinkFSCertHandler implements CertStoreI {
 
         if (!existsSync(storeDir)) {
             const parentDir = dirname(storeDir);
-            Assert.assertPathIsDir(parentDir);
-            Assert.assertPathWriteable(parentDir);
             this.logger.debug(`Creating directory '${storeDir}'`);
+            accessSync(parentDir, constants.W_OK);
             await fs.mkdir(storeDir);
-        } else {
-            Assert.assertPathIsDir(storeDir);
         }
         // Ensure path is writable
-        Assert.assertPathWriteable(storeDir);
+        accessSync(storeDir, constants.W_OK);
 
         const certLinkPath: string = format(this.certLinkPathFormat, commonName);
         const keyLinkPath: string = format(this.keyLinkPathFormat, commonName);
         const caLinkPath: string = format(this.caLinkPathFormat, commonName);
 
         if (existsSync(certLinkPath)) {
-            Assert.assertPathWriteable(certLinkPath);
+            accessSync(certLinkPath, constants.W_OK);
         }
         if (existsSync(keyLinkPath)) {
-            Assert.assertPathWriteable(keyLinkPath);
+            accessSync(keyLinkPath, constants.W_OK);
         }
         if (existsSync(caLinkPath)) {
-            Assert.assertPathWriteable(caLinkPath);
+            accessSync(caLinkPath, constants.W_OK);
         }
 
         // Fix symlinks if needed
