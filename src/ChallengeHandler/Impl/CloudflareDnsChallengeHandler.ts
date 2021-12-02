@@ -1,8 +1,9 @@
-import type { CloudFlareApi as CloudflareApi } from "../CloudflareApi/CloudflareApi";
-import type { DNSRecordI } from "../DNS/DNSRecordI";
-import type { CloudflareResponeDnsI } from "../CloudflareApi/CloudflareResponeDnsI";
+import type { CloudFlareApi } from "../../CloudflareApi/CloudflareApi";
+import type { CloudflareResponeDnsI } from "../../CloudflareApi/CloudflareResponeDnsI";
+import type { DNSRecordI } from "../../DNS/DNSRecordI";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
 import { AbstractDnsChallengeHandler } from "./AbstractDnsChallengeHandler";
+
 
 /**
  * DNS Challenge Handler using the Cloudflare API.
@@ -10,7 +11,7 @@ import { AbstractDnsChallengeHandler } from "./AbstractDnsChallengeHandler";
 export class CloudflareDnsChallengeHandler extends AbstractDnsChallengeHandler implements ChallengeHandlerI {
 
     public constructor(
-        private readonly cloudflareApi: CloudflareApi,
+        private readonly cloudflareApi: CloudFlareApi,
     ) {
         super();
     }

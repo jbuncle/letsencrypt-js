@@ -1,8 +1,8 @@
 /* eslint-disable @typescript-eslint/naming-convention */
 import type { Stats } from "fs";
 import { accessSync, constants, existsSync, promises as fs } from "fs";
-import type { CertResult } from "../CertGenerator/CertResult";
-import type { CertStoreI } from "./CertStore";
+import type { CertResultI } from "../CertGenerator/CertResultI";
+import type { CertStoreI } from "./CertStoreI";
 import { format } from "util";
 import { dirname, join, relative } from "path";
 import type { LoggerInterface } from "@jbuncle/logging-js";
@@ -86,7 +86,7 @@ export class SymlinkFSCertHandler implements CertStoreI {
      * @param commonName The domain name.
      * @param result The data to store
      */
-    public async store(commonName: string, result: CertResult): Promise<void> {
+    public async store(commonName: string, result: CertResultI): Promise<void> {
         const storeDir: string = this.getCertsDir(commonName);
 
         const certPath: string = this.getCertRealPath(commonName);

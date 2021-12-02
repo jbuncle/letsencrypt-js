@@ -1,16 +1,17 @@
 import type { Authorization, ClientAutoOptions } from "acme-client";
-import { forge } from "acme-client";
 import type { Challenge } from "acme-client/types/rfc8555";
-import type { CsrOptionsI } from "./CsrOptions";
-import type { CertResult } from "./CertResult";
-import type { ChallengeHandlerI } from "../ChallengeHandlerI";
-import { PemUtility } from "../Util/PemUtility";
-import type { ClientFactoryI } from "../ClientFactoryI";
+import { forge } from "acme-client";
+import type { ClientFactoryI } from "../../Client/ClientFactoryI";
+import { PemUtility } from "../../Util/PemUtility";
+import type { CertResultI } from "../CertResultI";
+import type { CsrOptionsI } from "../CsrOptionsI";
+import type { CertGeneratorI } from "../CertGeneratorI";
+import type { ChallengeHandlerI } from "../../ChallengeHandler";
 
 /**
  * Main class responsible for actually generating a certificate.
  */
-export class CertGenerator {
+export class CertGenerator implements CertGeneratorI {
 
     public constructor(
         private readonly clientFactory: ClientFactoryI,
@@ -25,7 +26,7 @@ export class CertGenerator {
     public async generate(
         csrOptions: CsrOptionsI,
         accountEmail: string
-    ): Promise<CertResult> {
+    ): Promise<CertResultI> {
 
         // Create ACME client
         const client = await this.clientFactory.create(accountEmail);
@@ -53,7 +54,7 @@ export class CertGenerator {
         const pemUtility: PemUtility = new PemUtility();
         const caCert: string = pemUtility.getCaCertFromFullChain(cert);
 
-        const result: CertResult = {
+        const result: CertResultI = {
             privateKey: sslPrivateKey.toString(),
             certificate: cert.toString(),
             caCert: caCert,

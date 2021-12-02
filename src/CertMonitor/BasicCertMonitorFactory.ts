@@ -1,17 +1,15 @@
-import { accessSync, constants } from "fs";
-import { CertGenerator } from "../CertGenerator/CertGenerator";
-import { CertHandler } from "../CertMonitor/CertHandler";
-import { CertMonitor } from "../CertMonitor/CertMonitor";
-import type { CertMonitorFactoryI } from "../CertMonitorFactoryI";
-import type { CertMonitorI } from "../CertMonitorI";
+import type { AccountKeyProviderI } from "../AccountKeyProviderI";
+import { CertGenerator } from "../CertGenerator/Impl/CertGenerator";
+import { CertHandler } from "./CertHandler";
+import { CertMonitor } from "./CertMonitor";
+import type { CertMonitorFactoryI } from "./CertMonitorFactoryI";
+import type { CertMonitorI } from "./CertMonitorI";
 import { BasicFSCertStore } from "../CertStore/BasicFSCertStore";
-import type { CertStoreI } from "../CertStore/CertStore";
-import type { ChallengeHandlerI } from "../ChallengeHandlerI";
-import { CombinedChallengeHandler } from "../ChallengeHandling/CombinedChallengeHandler";
-import type { AccountKeyProviderI } from "../Client/AccountKeyProviderI";
-import { AccountKeyGenerator } from "../Client/AccountKeyProviders/AccountKeyGenerator";
-import { FileAccountKeyProvider } from "../Client/AccountKeyProviders/FileAccountKeyProvider";
+import type { CertStoreI } from "../CertStore/CertStoreI";
+import { CombinedChallengeHandler } from "../ChallengeHandler/Impl/CombinedChallengeHandler";
+import { AccountKeyProviderFactory } from "../Client/AccountKeyProviderFactory";
 import { ClientFactory } from "../Client/ClientFactory";
+import type { ChallengeHandlerI } from "../ChallengeHandler";
 
 /**
  * Factory for creating basic CertMonitorI instances.
@@ -43,16 +41,9 @@ export class BasicCertMonitorFactory implements CertMonitorFactoryI {
         return new CertMonitor(certHandler);
     }
 
-    private createAccountKeyProvider(accountKeyPath: string | undefined): AccountKeyProviderI {
-        if (accountKeyPath !== undefined) {
-            try {
-                accessSync(accountKeyPath, constants.W_OK);
-                return new FileAccountKeyProvider(accountKeyPath, new AccountKeyGenerator());
-            } catch (e: unknown) {
-                throw new Error(`Can't access '${accountKeyPath}'`);
-            }
-        } else {
-            return new AccountKeyGenerator();
-        }
+    private createAccountKeyProvider(accountKeyDir: string | undefined): AccountKeyProviderI {
+        const accountKeyProviderFactory = new AccountKeyProviderFactory();
+
+        return accountKeyProviderFactory.createAccountKeyProvider(accountKeyDir);
     }
 }

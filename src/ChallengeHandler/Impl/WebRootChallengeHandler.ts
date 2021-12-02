@@ -3,7 +3,7 @@ import { Logger } from "@jbuncle/logging-js";
 import type { Authorization, Challenge } from "acme-client/types/rfc8555";
 import { accessSync, constants, existsSync, mkdirSync, promises as fs, readdirSync, rmdirSync } from 'fs';
 import { join } from "path";
-import type { ChallengeHandlerI } from "../ChallengeHandlerI";
+import type { ChallengeHandlerI } from "..";
 
 /**
  * Challenge handler which writes static web challenge files to a directory.

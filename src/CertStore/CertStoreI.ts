@@ -1,4 +1,4 @@
-import type { CertResult } from "../CertGenerator/CertResult";
+import type { CertResultI } from "../CertGenerator/CertResultI";
 
 export interface CertStoreI {
 
@@ -6,7 +6,7 @@ export interface CertStoreI {
     
     getCert: (commonName: string) => Promise<Buffer>;
     
-    store: (commonName: string, result: CertResult) => Promise<void>;
+    store: (commonName: string, result: CertResultI) => Promise<void>;
 
     hasCert: (commonName: string) => Promise<boolean>;
 }

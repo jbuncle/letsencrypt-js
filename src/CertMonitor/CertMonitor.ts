@@ -1,6 +1,6 @@
 import { EventEmitter } from "events";
-import { CertMonitorEvent } from "../CertMonitorEvent";
-import type { CertMonitorI } from "../CertMonitorI";
+import { CertMonitorEvent } from "./CertMonitorEvent";
+import type { CertMonitorI } from "./CertMonitorI";
 import { SynchronousRepeat } from "../Util/SynchronousRepeat";
 import type { Task } from "../Util/Task";
 import { TaskBatcher } from "../Util/TaskBatcher";

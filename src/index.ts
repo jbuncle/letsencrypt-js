@@ -2,12 +2,11 @@
  * @copyright 2021 James Buncle <jbuncle@hotmail.com>
  */
 
-export * as CertMonitorFactories from "./CertMonitorFactories";
-export * as HandlerFactories from "./HandlerFactories";
 
-export { AuthorizationI } from "./AuthorizationI";
-export { CertMonitorEvent } from "./CertMonitorEvent";
-export { CertMonitorFactoryI } from "./CertMonitorFactoryI";
-export { CertMonitorI } from "./CertMonitorI";
-export { ChallengeHandlerI } from "./ChallengeHandlerI";
-export { ChallengeI } from "./ChallengeI";
+export * as CertMonitor from "./CertMonitor";
+export * as ChallengeHandler from "./ChallengeHandler";
+export * as Client from "./Client";
+export * as CertGenerator from "./CertGenerator";
+
+export { AccountKeyProviderI } from "./AccountKeyProviderI";
+export { CertMonitorFactoryI } from "./CertMonitor/CertMonitorFactoryI";

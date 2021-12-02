@@ -1,6 +1,6 @@
+import type { ChallengeI } from "../ChallengeI";
 import type { AuthorizationI } from "../AuthorizationI";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
-import type { ChallengeI } from "../ChallengeI";
 
 /**
  * Combine multiple challenge handlers into one.

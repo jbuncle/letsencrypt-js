@@ -1,6 +1,6 @@
 import { existsSync, promises as fs } from "fs";
-import type { CertResult } from "../CertGenerator/CertResult";
-import type { CertStoreI } from "./CertStore";
+import type { CertResultI } from "../CertGenerator/CertResultI";
+import type { CertStoreI } from "./CertStoreI";
 import { format } from "util";
 
 /**
@@ -9,10 +9,10 @@ import { format } from "util";
 export class BasicFSCertStore implements CertStoreI {
 
     /**
-     * 
-     * @param certFilePathFormat - String format for cert (recives commonName) e.g. /certs/%s.crt
-     * @param keyFilePathFormat - String format for key (recives commonName) e.g. /certs/%s.key
-     * @param caFilePathFormat - String format for key (recives commonName) e.g. /certs/%s.chain.pem
+     *
+     * @param certFilePathFormat - String format for cert (receives commonName) e.g. /certs/%s.crt
+     * @param keyFilePathFormat - String format for key (receives commonName) e.g. /certs/%s.key
+     * @param caFilePathFormat - String format for key (receives commonName) e.g. /certs/%s.chain.pem
      */
     public constructor(
         private readonly certFilePathFormat: string,
@@ -35,7 +35,7 @@ export class BasicFSCertStore implements CertStoreI {
         return existsSync(certPath);
     }
 
-    public async store(commonName: string, result: CertResult): Promise<void> {
+    public async store(commonName: string, result: CertResultI): Promise<void> {
         // Write cert
         await this.writeToPattern(this.certFilePathFormat, commonName, result.certificate);
         // Write key

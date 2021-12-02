@@ -1,18 +1,16 @@
-import { CertGenerator } from "../CertGenerator/CertGenerator";
-import { CertHandler } from "../CertMonitor/CertHandler";
-import { CertMonitor } from "../CertMonitor/CertMonitor";
-import type { CertMonitorFactoryI } from "../CertMonitorFactoryI";
-import type { CertMonitorI } from "../CertMonitorI";
-import type { CertStoreI } from "../CertStore/CertStore";
-import { SymlinkFSCertHandler } from "../CertStore/SymlinkFSCertHandler";
-import type { ChallengeHandlerI } from "../ChallengeHandlerI";
-import type { AccountKeyProviderI } from "../Client/AccountKeyProviderI";
-import { AccountKeyGenerator } from "../Client/AccountKeyProviders/AccountKeyGenerator";
-import { FileAccountKeyProvider } from "../Client/AccountKeyProviders/FileAccountKeyProvider";
-import { ClientFactory } from "../Client/ClientFactory";
-import { WebRootChallengeHandlerFactory } from "../HandlerFactories";
 import { accessSync, constants, statSync } from "fs";
-
+import type { CertMonitorFactoryI, CertMonitorI } from ".";
+import type { AccountKeyProviderI } from "..";
+import { CertGenerator } from "../CertGenerator/Impl/CertGenerator";
+import type { CertStoreI } from "../CertStore/CertStoreI";
+import { SymlinkFSCertHandler } from "../CertStore/SymlinkFSCertHandler";
+import type { ChallengeHandlerI } from "../ChallengeHandler";
+import { WebRootChallengeHandlerFactory } from "../ChallengeHandler/WebRootChallengeHandlerFactory";
+import { AccountKeyProviderFactory } from "../Client/AccountKeyProviderFactory";
+import { ClientFactory } from "../Client/ClientFactory";
+import type { ClientFactoryI } from "../Client/ClientFactoryI";
+import { CertHandler } from "./CertHandler";
+import { CertMonitor } from "./CertMonitor";
 /**
  * Factory for creating certs for a common Nginx server configuration.
  */
@@ -100,8 +98,8 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
         accessSync(this.webRoot, constants.W_OK);
 
         const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(this.accountKeyDir);
-        const clientFactory: ClientFactory = new ClientFactory(accountKeyProvider, staging);
-        const challengeHandler: ChallengeHandlerI = new WebRootChallengeHandlerFactory().create(this.webRoot);
+        const clientFactory: ClientFactoryI = new ClientFactory(accountKeyProvider, staging);
+        const challengeHandler: ChallengeHandlerI = new WebRootChallengeHandlerFactory(this.webRoot).create();
         const certGenerator: CertGenerator = new CertGenerator(clientFactory, challengeHandler);
 
         const certStore: CertStoreI = new SymlinkFSCertHandler(
@@ -115,7 +113,7 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
 
         const certHandler: CertHandler = new CertHandler(
             certGenerator,
-            certStore, 
+            certStore,
             this.expiryThresholdDays
         );
 
@@ -123,15 +121,8 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
     }
 
     private createAccountKeyProvider(accountKeyDir: string | undefined): AccountKeyProviderI {
-        if (accountKeyDir !== undefined) {
-            if (!statSync(accountKeyDir).isDirectory()) {
-                throw new Error(`Directory '${accountKeyDir}' doesn't exist`);
-            }
-            accessSync(accountKeyDir, constants.W_OK);
+        const accountKeyProviderFactory = new AccountKeyProviderFactory();
 
-            return new FileAccountKeyProvider(accountKeyDir, new AccountKeyGenerator());
-        } else {
-            return new AccountKeyGenerator();
-        }
+        return accountKeyProviderFactory.createAccountKeyProvider(accountKeyDir);
     }
 }

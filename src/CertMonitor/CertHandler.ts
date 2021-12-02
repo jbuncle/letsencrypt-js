@@ -1,7 +1,7 @@
-import type { CertGenerator } from "../CertGenerator/CertGenerator";
-import type { CertResult } from "../CertGenerator/CertResult";
+import type { CertGenerator } from "../CertGenerator/Impl/CertGenerator";
+import type { CertResultI } from "../CertGenerator/CertResultI";
 import { PemUtility as PemUtility } from "../Util/PemUtility";
-import type { CertStoreI } from "../CertStore/CertStore";
+import type { CertStoreI } from "../CertStore/CertStoreI";
 
 /**
  * Handle creation of a certificate & key on filesystem.
@@ -49,7 +49,7 @@ export class CertHandler {
         await this.certStore.prepare(commonName);
         if (!(await this.certStore.hasCert(commonName)) || await this.renewalRequired(commonName)) {
 
-            const result: CertResult = await this.certGenerator.generate({
+            const result: CertResultI = await this.certGenerator.generate({
                 commonName,
             }, accountEmail);
 

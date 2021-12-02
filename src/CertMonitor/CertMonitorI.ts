@@ -6,7 +6,7 @@ import type { CertMonitorEvent } from "./CertMonitorEvent";
 export interface CertMonitorI {
 
     /**
-     * Update domains with given object (of domain => email key:value pairs).
+     * Update domain name watch list with given object (of domain => email key:value pairs).
      *
      * @param The domains.
      */
