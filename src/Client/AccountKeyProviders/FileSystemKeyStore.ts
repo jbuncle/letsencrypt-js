@@ -1,4 +1,4 @@
-import { promises as fs } from "fs";
+import { existsSync, promises as fs } from "fs";
 import { join } from "path";
 import type { AccountKeyStoreI } from "./AccountKeyStoreI";
 
@@ -24,6 +24,10 @@ export class FileSystemKeyStore implements AccountKeyStoreI {
 
     public async hasKey(accountEmail: string): Promise<boolean> {
         const keyPath: string = this.getKeyPath(accountEmail);
+        if (!existsSync(keyPath)) {
+            return false;
+        }
+
         const stat = await fs.stat(keyPath);
 
         return stat.isFile();
