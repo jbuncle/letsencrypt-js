@@ -3,10 +3,10 @@
  */
 
 
-export * as CertMonitor from "./CertMonitor";
-export * as ChallengeHandler from "./ChallengeHandler";
-export * as Client from "./Client";
-export * as CertGenerator from "./CertGenerator";
+export * from "./CertMonitor";
+export * from "./ChallengeHandler";
+export * from "./Client";
+export * from "./CertGenerator";
 
 export { AccountKeyProviderI } from "./AccountKeyProviderI";
 export { CertMonitorFactoryI } from "./CertMonitor/CertMonitorFactoryI";
