@@ -1,7 +1,7 @@
-import { CertMonitor } from "../";
+import { NginxCertMonitorFactory } from "../";
 
 // Create the certificate monitor
-const certMonitor = new CertMonitor.NginxCertMonitorFactory().create(false);
+const certMonitor = new NginxCertMonitorFactory().create(false);
 
 // Initial domains
 certMonitor.set({

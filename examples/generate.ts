@@ -1,24 +1,23 @@
 
 
 
-import type { AccountKeyProviderI } from "../";
-import { CertGenerator, ChallengeHandler, Client } from "../";
+import { AccountKeyProviderFactory, AccountKeyProviderI, CertGeneratorFactory, CertGeneratorI, ChallengeHandlerI, ClientFactory, ClientFactoryI, WebRootChallengeHandlerFactory } from "../";
 
 // Create certificate handler using WebRootChallengeHandlerFactory writes ACME challenges to the filesystem which are then served statically
-const challengeHandler: ChallengeHandler.ChallengeHandlerI
-    = new ChallengeHandler.WebRootChallengeHandlerFactory('/usr/share/nginx/html').create();
+const challengeHandler: ChallengeHandlerI
+    = new WebRootChallengeHandlerFactory('/usr/share/nginx/html').create();
 
 // Define Account key provider/generator, to store and persist account keys use FileAccountKeyProvider
 const accountKeyProvider: AccountKeyProviderI
-    = new Client.AccountKeyProviderFactory().createAccountKeyProvider();
+    = new AccountKeyProviderFactory().createAccountKeyProvider();
 
 // Create a client factory
-const clientFactory: Client.ClientFactoryI
-    = new Client.ClientFactory(accountKeyProvider, false);
+const clientFactory: ClientFactoryI
+    = new ClientFactory(accountKeyProvider, false);
 
 // Create certificate generator
-const certGenerator: CertGenerator.CertGeneratorI
-    = new CertGenerator.CertGeneratorFactory(clientFactory, challengeHandler).create();
+const certGenerator: CertGeneratorI
+    = new CertGeneratorFactory(clientFactory, challengeHandler).create();
 
 // Generate certificate for domain, returning the result in a Promise
 certGenerator.generate(

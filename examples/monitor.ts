@@ -1,12 +1,12 @@
-import { CertMonitor, ChallengeHandler } from "../";
+import { BasicCertMonitorFactory, WebRootChallengeHandlerFactory } from "../dist";
 
 // Web Root used to write and serve ACME challenge responses
 const webRoot: string = '/usr/share/nginx/html';
 // Create challenge handler
-const challengeHandler = new ChallengeHandler.WebRootChallengeHandlerFactory(webRoot).create();
+const challengeHandler = new WebRootChallengeHandlerFactory(webRoot).create();
 
 // Create cert monitor instance with a factory
-const certMonitor = new CertMonitor.BasicCertMonitorFactory(
+const certMonitor = new BasicCertMonitorFactory(
     [challengeHandler],
     `/etc/nginx/certs/%s.crt`, // Certificate file pattern
     `/etc/nginx/certs/%s.key`, // Key file pattern 

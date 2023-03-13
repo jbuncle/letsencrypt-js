@@ -1,34 +1,29 @@
 # LetEncrypt Certificate Generation & Monitoring Library
 
-Simple NodeJS/TypeScript library for providing generating and/or monitoring LetsEncrypt (ACME) certificates (i.e. auto-renewal).
-
-Provides the ability to dynamically define, monitor and generate certificates.
-
-Built on top of acme-client.
+This is a NodeJS/TypeScript library that simplifies the process of generating and monitoring LetEncrypt (ACME) certificates. It provides the ability to dynamically define, monitor and generate certificates using the acme-client library.
 
 ## Certificate Generation
 
-The example below shows how to generate a one-off certificate
+The library allows you to generate a one-off certificate using the following example:
 
 ```typescript
+import { AccountKeyProviderFactory, AccountKeyProviderI, CertGeneratorFactory, CertGeneratorI, ChallengeHandlerI, ClientFactory, ClientFactoryI, WebRootChallengeHandlerFactory } from "@jbuncle/letsencrypt-js";
 
-import type { AccountKeyProviderI } from "@jbuncle/letsencrypt-js";
-import { CertGenerator, ChallengeHandler, Client } from "@jbuncle/letsencrypt-js";
-
-// Create certificate handler
-
-// WebRootChallengeHandlerFactory writes ACME challenges to the filesystem which are then served statically
-const challengeHandler: ChallengeHandler.ChallengeHandlerI = new ChallengeHandler.WebRootChallengeHandlerFactory( '/usr/share/nginx/html').create();
+// Create certificate handler using WebRootChallengeHandlerFactory writes ACME challenges to the filesystem which are then served statically
+const challengeHandler: ChallengeHandlerI
+    = new WebRootChallengeHandlerFactory('/usr/share/nginx/html').create();
 
 // Define Account key provider/generator, to store and persist account keys use FileAccountKeyProvider
-const accountKeyProvider: AccountKeyProviderI = new Client.AccountKeyProviderFactory().createAccountKeyProvider();
+const accountKeyProvider: AccountKeyProviderI
+    = new AccountKeyProviderFactory().createAccountKeyProvider();
 
 // Create a client factory
-const clientFactory: Client.ClientFactoryI = new Client.ClientFactory(accountKeyProvider, false);
+const clientFactory: ClientFactoryI
+    = new ClientFactory(accountKeyProvider, false);
 
 // Create certificate generator
-const certGenerator: CertGenerator.CertGeneratorI
-    = new CertGenerator.CertGeneratorFactory(clientFactory, challengeHandler).create();
+const certGenerator: CertGeneratorI
+    = new CertGeneratorFactory(clientFactory, challengeHandler).create();
 
 // Generate certificate for domain, returning the result in a Promise
 certGenerator.generate(
@@ -39,28 +34,25 @@ certGenerator.generate(
     console.log(certResult.privateKey);
     console.log(certResult.certificate);
 });
-
 ```
 
 ## Certificate Monitoring
 
-### Simple Example
-
-To generate and renew certificates as a background process you can use a certificate monitor.
+To generate and renew certificates as a background process, you can use a certificate monitor. The library provides a `BasicCertMonitor` class that you can use to monitor certificates. Here's an example of how to use it:
 
 ```typescript
-import { CertMonitor, ChallengeHandler } from "@jbuncle/letsencrypt-js";
+import { BasicCertMonitorFactory, WebRootChallengeHandlerFactory } from "@jbuncle/letsencrypt-js";
 
 // Web Root used to write and serve ACME challenge responses
 const webRoot: string = '/usr/share/nginx/html';
 // Create challenge handler
-const challengeHandler = new ChallengeHandler.WebRootChallengeHandlerFactory(webRoot).create();
+const challengeHandler = new WebRootChallengeHandlerFactory(webRoot).create();
 
 // Create cert monitor instance with a factory
-const certMonitor = new CertMonitor.BasicCertMonitorFactory(
+const certMonitor = new BasicCertMonitorFactory(
     [challengeHandler],
     `/etc/nginx/certs/%s.crt`, // Certificate file pattern
-    `/etc/nginx/certs/%s.key`, // Key file pattern 
+    `/etc/nginx/certs/%s.key`, // Key file pattern
     `/etc/nginx/certs/%s.chain.pem`, // CA file Pattern
     `/etc/letsencrypt/accounts` // Account key path
 ).create(false);
@@ -80,20 +72,37 @@ certMonitor.set({
 });
 ```
 
-The above example uses values that are compatible with typical Nginx configuration,
-the equivalent would be needed for other web servers.
-
-However, for convenience you can use an NginxCertMonitorFactory to create a CertMonitor with such values.
-
-### Nginx Certificate Monitoring
-
-Create CertMonitor using Nginx compatible defaults
+Alternatively, you can use the `NginxCertMonitorFactory` to create a certificate monitor with Nginx-compatible defaults:
 
 ```typescript
-import { CertMonitor } from "@jbuncle/letsencrypt-js";
+
+import { NginxCertMonitorFactory } from "@jbuncle/letsencrypt-js";
 
 // Create the certificate monitor
-const certMonitor = new CertMonitor.NginxCertMonitorFactory().create(false);
+const certMonitor = new NginxCertMonitorFactory().create(false);
+
+// Initial domains
+certMonitor.set({
+    'mydomain.com': 'me@myemail.com',
+});
+
+// Start monitoring
+certMonitor.start(1440);`
+```
+
+Note that the above example is specific to Nginx, and an equivalent configuration is needed for other web servers.
+
+## Node.js?
+
+As this library was written in TypeScript it is compatible with plain Node.js
+
+Here's an example:
+
+```javascript
+const { NginxCertMonitorFactory } = require("@jbuncle/letsencrypt-js");
+
+// Create the certificate monitor
+const certMonitor = new NginxCertMonitorFactory().create(false);
 
 // Initial domains
 certMonitor.set({

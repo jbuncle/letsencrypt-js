@@ -16,6 +16,15 @@ import type { ChallengeHandlerI } from "../ChallengeHandler";
  */
 export class BasicCertMonitorFactory implements CertMonitorFactoryI {
 
+    /**
+     * 
+     * @param handlers The challenge handlers to respond to LetsEncrypt
+     * @param certFilePathFormat Format of the cert path, e.g. /certs/%s.crt
+     * @param keyFilePathFormat  Format of the key path, e.g. /certs/%s.key
+     * @param caFilePathFormat Format of the key path, e.g. /certs/%s.chain.pem
+     * @param accountKeyDir The directory to store account keys
+     * @param expiryThresholdDays The number of days before certificate expiry to renew
+     */
     public constructor(
         private readonly handlers: ChallengeHandlerI[],
         private readonly certFilePathFormat: string,
