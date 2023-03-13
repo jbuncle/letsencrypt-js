@@ -1,0 +1,8 @@
+/nbproject
+/.gitlab-ci.yml
+/.eslintrc.json
+/.github
+/tsconfig.json
+/src
+/*.tgz
+/README.md
