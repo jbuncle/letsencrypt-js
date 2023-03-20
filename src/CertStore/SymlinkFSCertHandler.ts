@@ -7,6 +7,7 @@ import { format } from "util";
 import { dirname, join, relative } from "path";
 import type { LoggerInterface } from "@jbuncle/logging-js";
 import { Logger } from "@jbuncle/logging-js";
+import { LetsEncryptJsError } from "../LetsEncryptJsError";
 
 /**
  * CertHandler that stores certs in a directory and symlinks to them.
@@ -187,7 +188,7 @@ export class SymlinkFSCertHandler implements CertStoreI {
             await fs.symlink(relativeTargetPath, linkPath);
         } catch (e: unknown) {
             const error: Error = e as Error;
-            throw new Error(`Error creating symlink '${linkPath}' => '${relativeTargetPath}', due to '${error.message}'`);
+            throw new LetsEncryptJsError(`Error creating symlink '${linkPath}' => '${relativeTargetPath}', due to '${error.message}'`);
         }
     }
 

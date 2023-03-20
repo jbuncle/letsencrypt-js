@@ -5,6 +5,7 @@ import { request } from "https";
 import type { CloudFlareDNSRecordI } from "./CloudFlareDNSRecordI";
 import type { CloudflareResponseI } from "./CloudflareResponeI";
 import type { CloudflareResponeDnsI } from "./CloudflareResponeDnsI";
+import { LetsEncryptJsError } from "../LetsEncryptJsError";
 
 
 /**
@@ -42,7 +43,7 @@ export class CloudFlareApi {
         const response: CloudflareHttpResponse<CloudflareResponeDnsI[]> = await this.httpsRequest(endpoint, HttpRequestMethod.GET, {});
 
         if (!response.data.success) {
-            throw new Error(response.data.errors.join(` => `));
+            throw new LetsEncryptJsError(response.data.errors.join(` => `));
         }
         return response.data.result;
     }
@@ -52,20 +53,20 @@ export class CloudFlareApi {
         const response: CloudflareHttpResponse<CloudflareResponeDnsI> = await this.httpsRequest(endpoint, HttpRequestMethod.POST, record);
 
         if (!response.data.success) {
-            throw new Error(response.data.messages.join(` => `));
+            throw new LetsEncryptJsError(response.data.messages.join(` => `));
         }
         return response.data.result;
     }
 
     public async deleteRecord(identifier: string): Promise<CloudflareResponeDnsI> {
         if (identifier.length <= 0) {
-            throw new Error(`Bad identifier '${identifier}'`);
+            throw new LetsEncryptJsError(`Bad identifier '${identifier}'`);
         }
         const endpoint: string = `/client/v4/zones/${this.zoneId}/dns_records/${identifier}`;
         const response: CloudflareHttpResponse<CloudflareResponeDnsI> = await this.httpsRequest(endpoint, HttpRequestMethod.DELETE, {});
 
         if (!response.data.success) {
-            throw new Error(response.data.messages.join(` => `));
+            throw new LetsEncryptJsError(response.data.messages.join(` => `));
         }
         return response.data.result;
     }

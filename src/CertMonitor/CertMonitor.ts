@@ -187,7 +187,7 @@ export class CertMonitor implements CertMonitorI {
             } catch (e: unknown) {
                 const numErrorListeners: number = this.eventEmitter.listenerCount(CertMonitorEvent.ERROR);
                 if (numErrorListeners < 1) {
-                    throw new Error(`Unhandled error: ` + String(e));
+                    throw new LetsEncryptJsError(`Unhandled error: ` + String(e));
                 } else {
                     this.emit(CertMonitorEvent.ERROR, e);
                 }

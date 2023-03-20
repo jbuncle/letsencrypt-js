@@ -1,6 +1,7 @@
 import { existsSync, promises as fs } from "fs";
 import { join } from "path";
 import type { AccountKeyStoreI } from "./AccountKeyStoreI";
+import { LetsEncryptJsError } from "../../LetsEncryptJsError";
 
 /**
  * File system key store.
@@ -13,7 +14,7 @@ export class FileSystemKeyStore implements AccountKeyStoreI {
 
     public async getKey(accountEmail: string): Promise<Buffer> {
         if (!(await this.hasKey(accountEmail))) {
-            throw new Error(`Missing key for '${accountEmail}'`);
+            throw new LetsEncryptJsError(`Missing key for '${accountEmail}'`);
         }
 
         const keyPath: string = this.getKeyPath(accountEmail);

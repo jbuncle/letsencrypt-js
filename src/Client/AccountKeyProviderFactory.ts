@@ -5,6 +5,7 @@ import { AccountKeyGenerator } from "./AccountKeyProviders/AccountKeyGenerator";
 import type { AccountKeyStoreI } from "./AccountKeyProviders/AccountKeyStoreI";
 import { StoredAccountKeyProvider } from "./AccountKeyProviders/FileAccountKeyProvider";
 import { FileSystemKeyStore } from "./AccountKeyProviders/FileSystemKeyStore";
+import { LetsEncryptJsError } from "../LetsEncryptJsError";
 
 /**
  * Factory class for creating AccountKeyProviders.
@@ -29,7 +30,7 @@ export class AccountKeyProviderFactory {
         // Ensure the storage directory is accessible
         const stat = statSync(accountKeyDir);
         if (!stat.isDirectory()) {
-            throw new Error(`Directory '${accountKeyDir}' doesn't exist`);
+            throw new LetsEncryptJsError(`Directory '${accountKeyDir}' doesn't exist`);
         }
         accessSync(accountKeyDir, constants.W_OK);
 

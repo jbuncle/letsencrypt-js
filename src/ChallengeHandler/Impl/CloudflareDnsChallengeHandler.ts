@@ -1,6 +1,7 @@
 import type { CloudFlareApi } from "../../CloudflareApi/CloudflareApi";
 import type { CloudflareResponeDnsI } from "../../CloudflareApi/CloudflareResponeDnsI";
 import type { DNSRecordI } from "../../DNS/DNSRecordI";
+import { LetsEncryptJsError } from "../../LetsEncryptJsError";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
 import { AbstractDnsChallengeHandler } from "./AbstractDnsChallengeHandler";
 
@@ -37,7 +38,7 @@ export class CloudflareDnsChallengeHandler extends AbstractDnsChallengeHandler i
                 && currentRecord.content === search.content;
         });
         if (record === undefined) {
-            throw new Error(`Failed to find record for ${search.name}`)
+            throw new LetsEncryptJsError(`Failed to find record for ${search.name}`)
         }
         return record.id;
     }

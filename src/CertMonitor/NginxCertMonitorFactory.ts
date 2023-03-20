@@ -11,6 +11,7 @@ import { ClientFactory } from "../Client/ClientFactory";
 import type { ClientFactoryI } from "../Client/ClientFactoryI";
 import { CertHandler } from "./CertHandler";
 import { CertMonitor } from "./CertMonitor";
+import { LetsEncryptJsError } from "../LetsEncryptJsError";
 /**
  * Factory for creating certs for a common Nginx server configuration.
  */
@@ -89,10 +90,10 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
     public create(staging: boolean): CertMonitorI {
 
         if (!statSync(this.accountKeyDir).isDirectory()) {
-            throw new Error(`Directory '${this.accountKeyDir}' doesn't exist`);
+            throw new LetsEncryptJsError(`Directory '${this.accountKeyDir}' doesn't exist`);
         }
         if (!statSync(this.webRoot).isDirectory()) {
-            throw new Error(`Directory '${this.webRoot}' doesn't exist`);
+            throw new LetsEncryptJsError(`Directory '${this.webRoot}' doesn't exist`);
         }
         accessSync(this.accountKeyDir, constants.W_OK);
         accessSync(this.webRoot, constants.W_OK);

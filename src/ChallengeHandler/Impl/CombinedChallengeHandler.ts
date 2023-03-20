@@ -1,6 +1,7 @@
 import type { ChallengeI } from "../ChallengeI";
 import type { AuthorizationI } from "../AuthorizationI";
 import type { ChallengeHandlerI } from "../ChallengeHandlerI";
+import { LetsEncryptJsError } from "../../LetsEncryptJsError";
 
 /**
  * Combine multiple challenge handlers into one.
@@ -64,7 +65,7 @@ export class CombinedChallengeHandler implements ChallengeHandlerI {
 
     private getHandler(challengeType: string): ChallengeHandlerI {
         if (!(Object.prototype.hasOwnProperty.call(this.handlers, challengeType) as boolean)) {
-            throw new Error(`Unsupported challenge type`);
+            throw new LetsEncryptJsError(`Unsupported challenge type`);
         }
         return this.handlers[challengeType];
 

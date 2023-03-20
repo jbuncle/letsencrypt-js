@@ -4,6 +4,7 @@ import type { Authorization, Challenge } from "acme-client/types/rfc8555";
 import { accessSync, constants, existsSync, mkdirSync, promises as fs, readdirSync, rmdirSync } from 'fs';
 import { join } from "path";
 import type { ChallengeHandlerI } from "..";
+import { LetsEncryptJsError } from "../../LetsEncryptJsError";
 
 /**
  * Challenge handler which writes static web challenge files to a directory.
@@ -18,7 +19,7 @@ export class WebRootChallengeHandler implements ChallengeHandlerI {
         try {
             accessSync(webRoot, constants.W_OK);
         } catch (e: unknown) {
-            throw new Error(`Can't access '${webRoot}'`);
+            throw new LetsEncryptJsError(`Can't access '${webRoot}'`);
         }
     }
 
