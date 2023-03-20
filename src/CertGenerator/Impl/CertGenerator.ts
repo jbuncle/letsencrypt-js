@@ -34,10 +34,10 @@ export class CertGenerator implements CertGeneratorI {
         // Create CSR (Certificate Signing Request)
         const [sslPrivateKey, csr] = await forge.createCsr(csrOptions);
 
-        const challengeCreateFn: ChallengeCallback = async(authorisation: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
+        const challengeCreateFn: ChallengeCallback = async (authorisation: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
             return this.challengeHandler.create(authorisation, challenge, keyAuthorization);
         };
-        const challengeRemoveFn: ChallengeCallback = async(authorisation: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
+        const challengeRemoveFn: ChallengeCallback = async (authorisation: Authorization, challenge: Challenge, keyAuthorization: string): Promise<boolean> => {
             return this.challengeHandler.remove(authorisation, challenge, keyAuthorization);
         }
 
