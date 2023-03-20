@@ -8,7 +8,8 @@
             "./node_modules/@types"
         ],
         "strictNullChecks": true,
-        "removeComments": false
+        "removeComments": false,
+        "sourceMap": true
     },
     "include": [
         "src/**/*.ts"
