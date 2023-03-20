@@ -1,10 +1,12 @@
 import { EventEmitter } from "events";
-import { CertMonitorEvent } from "./CertMonitorEvent";
-import type { CertMonitorI } from "./CertMonitorI";
 import { SynchronousRepeat } from "../Util/SynchronousRepeat";
 import type { Task } from "../Util/Task";
 import { TaskBatcher } from "../Util/TaskBatcher";
 import type { CertHandler } from "./CertHandler";
+import { CertHandlerEvent } from "./CertHandlerEvent";
+import { CertMonitorEvent } from "./CertMonitorEvent";
+import type { CertMonitorI } from "./CertMonitorI";
+import { LetsEncryptJsError } from "../LetsEncryptJsError";
 
 /**
  * Class for monitoring certificates - renewing or creating certificates as needed.
@@ -42,11 +44,23 @@ export class CertMonitor implements CertMonitorI {
     /**
      * Add event listener.
      *
-     * @param event The event to listen to.
-     * @param callback The even listener.
+     * @param events The events to listen to, or undefined to listen to all events.
+     * @param callback The event listener.
      */
-    public on(event: CertMonitorEvent, callback: (...args: unknown[]) => void): void {
-        this.eventEmitter.on(event, callback);
+    public on(events: CertMonitorEvent[] | undefined, callback: (event: CertMonitorEvent, ...args: unknown[]) => void): void {
+        if (events === undefined) {
+            events = [
+                CertMonitorEvent.ERROR,
+                CertMonitorEvent.GENERATED,
+                CertMonitorEvent.RENEWED,
+                CertMonitorEvent.SKIPPED,
+                CertMonitorEvent.STARTED,
+                CertMonitorEvent.STOPPED,
+            ];
+        }
+        for (const event of events) {
+            this.onEvent(event, callback);
+        }
     }
 
     /**
@@ -56,12 +70,12 @@ export class CertMonitor implements CertMonitorI {
      */
     public async start(frequencyMinutes: number): Promise<void> {
         if (this.intervalTimeout !== undefined) {
-            throw new Error(`Already running`);
+            throw new LetsEncryptJsError(`Already running`);
         }
 
         const ms: number = frequencyMinutes * 60000;
 
-        this.intervalTimeout = new SynchronousRepeat(async() => {
+        this.intervalTimeout = new SynchronousRepeat(async (): Promise<void> => {
             // Run in task pool to avoid going crazy with tasks
             const tasks: Generator<Task<boolean>> = this.createTasks();
             return this.taskBatcher.addAndRun(tasks);
@@ -104,6 +118,12 @@ export class CertMonitor implements CertMonitorI {
         });
 
         this.notifyAddition(additions);
+    }
+
+    private onEvent(event: CertMonitorEvent, callback: (event: CertMonitorEvent, ...args: unknown[]) => void): void {
+        this.eventEmitter.on(event, (...args: unknown[]) => {
+            callback(event, ...args);
+        });
     }
 
     /**
@@ -174,16 +194,23 @@ export class CertMonitor implements CertMonitorI {
 
     private createTask(domainName: string, accountEmail: string): Task<boolean> {
         // Create task (a function that creates a promise)
-        return async(): Promise<boolean> => {
+        return async (): Promise<boolean> => {
             // Handle exceptions
             try {
-                const result: boolean = await this.certHandler.generateOrRenewCertificate(domainName, accountEmail);
-                if (result) {
-                    this.emit(CertMonitorEvent.GENERATED, domainName, accountEmail);
-                } else {
-                    this.emit(CertMonitorEvent.SKIPPED, domainName, accountEmail);
+                const result: CertHandlerEvent = await this.certHandler.generateOrRenewCertificate(domainName, accountEmail);
+                switch (result) {
+                    case CertHandlerEvent.CREATED:
+                        this.emit(CertMonitorEvent.GENERATED, domainName, accountEmail);
+                        return true;
+                    case CertHandlerEvent.RENEWED:
+                        this.emit(CertMonitorEvent.RENEWED, domainName, accountEmail);
+                        return true;
+                    case CertHandlerEvent.SKIPPED:
+                        this.emit(CertMonitorEvent.SKIPPED, domainName, accountEmail);
+                        return false;
+                    case CertHandlerEvent.INPROGRESS:
+                        return false;
                 }
-                return result;
             } catch (e: unknown) {
                 const numErrorListeners: number = this.eventEmitter.listenerCount(CertMonitorEvent.ERROR);
                 if (numErrorListeners < 1) {

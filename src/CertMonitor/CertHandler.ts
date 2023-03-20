@@ -2,16 +2,14 @@ import type { CertGenerator } from "../CertGenerator/Impl/CertGenerator";
 import type { CertResultI } from "../CertGenerator/CertResultI";
 import { PemUtility as PemUtility } from "../Util/PemUtility";
 import type { CertStoreI } from "../CertStore/CertStoreI";
+import { CertHandlerEvent } from "./CertHandlerEvent";
+import { ActionLock } from "./ActionLock";
 
 /**
  * Handle creation of a certificate & key on filesystem.
  */
 export class CertHandler {
 
-    /**
-     * Domain currently being processed (use to prevent asynchronous processing of the same domain).
-     */
-    private readonly inProgressDomains: Record<string, boolean> = {};
 
     /**
      * 
@@ -23,6 +21,7 @@ export class CertHandler {
         private readonly certGenerator: CertGenerator,
         private readonly certStore: CertStoreI,
         private readonly expiryThresholdDays: number = 5,
+        private readonly actionLock: ActionLock<CertHandlerEvent> = new ActionLock()
     ) { }
 
     /**
@@ -31,40 +30,36 @@ export class CertHandler {
      * @param commonName 
      * @param accountEmail 
      */
-    public async generateOrRenewCertificate(commonName: string, accountEmail: string): Promise<boolean> {
-
-        if (!this.inProgress(commonName)) {
-            this.inProgressDomains[commonName] = true;
-            try {
-                // Check if certificate exists or needs renewal
-                return await this.doRenewal(commonName, accountEmail);
-            } finally {
-                this.inProgressDomains[commonName] = false;
-            }
-        }
-        return false;
+    public async generateOrRenewCertificate(commonName: string, accountEmail: string): Promise<CertHandlerEvent> {
+        return this.actionLock.performAction(commonName, CertHandlerEvent.INPROGRESS, async (): Promise<CertHandlerEvent> => {
+            return this.doRenewal(commonName, accountEmail);
+        });
     }
 
-    private async doRenewal(commonName: string, accountEmail: string): Promise<boolean> {
+    private async doRenewal(commonName: string, accountEmail: string): Promise<CertHandlerEvent> {
         await this.certStore.prepare(commonName);
-        if (!(await this.certStore.hasCert(commonName)) || await this.renewalRequired(commonName)) {
+        if (!await this.certStore.hasCert(commonName)) {
+            // Create
+            await this.generateCertificate(commonName, accountEmail);
 
-            const result: CertResultI = await this.certGenerator.generate({
-                commonName,
-            }, accountEmail);
+            return CertHandlerEvent.CREATED;
 
-            await this.certStore.store(commonName, result);
-
-            return true;
         }
-        return false;
+        if (!await this.renewalRequired(commonName)) {
+            // Renew
+            await this.generateCertificate(commonName, accountEmail);
+
+            return CertHandlerEvent.RENEWED;
+        }
+        return CertHandlerEvent.SKIPPED;
     }
 
-    private inProgress(commonName: string): boolean {
-        if (Object.prototype.hasOwnProperty.call(this.inProgressDomains, commonName) === true) {
-            return this.inProgressDomains[commonName];
-        }
-        return false;
+    private async generateCertificate(commonName: string, accountEmail: string): Promise<void> {
+        const result: CertResultI = await this.certGenerator.generate({
+            commonName,
+        }, accountEmail);
+
+        await this.certStore.store(commonName, result);
     }
 
     private async renewalRequired(commonName: string): Promise<boolean> {

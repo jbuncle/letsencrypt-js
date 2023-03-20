@@ -27,9 +27,9 @@ export interface CertMonitorI {
     /**
      * Add event listener.
      *
-     * @param event The event to listen to.
-     * @param callback The even listener.
+     * @param events The events to listen to, or undefined to listen to all events.
+     * @param callback The event listener.
      */
-    on: (event: CertMonitorEvent, callback: (...args: unknown[]) => void) => void;
+    on: (events: CertMonitorEvent[] | undefined, callback: (...args: unknown[]) => void) => void;
 }
 
