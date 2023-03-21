@@ -1,4 +1,5 @@
 import type { AccountKeyProviderI } from "../AccountKeyProviderI";
+import type { CertGeneratorOptions } from "../CertGenerator/Impl/CertGeneratorOptions";
 import { CertGenerator } from "../CertGenerator/Impl/CertGenerator";
 import { CertHandler } from "./CertHandler";
 import { CertMonitor } from "./CertMonitor";
@@ -10,42 +11,35 @@ import { CombinedChallengeHandler } from "../ChallengeHandler/Impl/CombinedChall
 import { AccountKeyProviderFactory } from "../Client/AccountKeyProviderFactory";
 import { ClientFactory } from "../Client/ClientFactory";
 import type { ChallengeHandlerI } from "../ChallengeHandler";
+import type { BasicCertMonitorFactoryOptions } from "./BasicCertMonitorFactoryOptions";
 
 /**
  * Factory for creating basic CertMonitorI instances.
  */
 export class BasicCertMonitorFactory implements CertMonitorFactoryI {
 
-    /**
-     * 
-     * @param handlers The challenge handlers to respond to LetsEncrypt
-     * @param certFilePathFormat Format of the cert path, e.g. /certs/%s.crt
-     * @param keyFilePathFormat  Format of the key path, e.g. /certs/%s.key
-     * @param caFilePathFormat Format of the key path, e.g. /certs/%s.chain.pem
-     * @param accountKeyDir The directory to store account keys
-     * @param expiryThresholdDays The number of days before certificate expiry to renew
-     */
     public constructor(
-        private readonly handlers: ChallengeHandlerI[],
-        private readonly certFilePathFormat: string,
-        private readonly keyFilePathFormat: string,
-        private readonly caFilePathFormat: string,
-        private readonly accountKeyDir?: string,
-        private readonly expiryThresholdDays: number = 30
+        private readonly options: BasicCertMonitorFactoryOptions
     ) { }
 
     public create(staging: boolean): CertMonitorI {
-        const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(this.accountKeyDir);
-        const clientFactory: ClientFactory = new ClientFactory(accountKeyProvider, staging);
-        const challengeHandler: ChallengeHandlerI = new CombinedChallengeHandler(this.handlers);
+        const expiryThresholdDays: number = this.options.expiryThresholdDays ?? 30;
 
-        const certGenerator: CertGenerator = new CertGenerator(clientFactory, challengeHandler);
+        const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(this.options.accountKeyDir);
+        const clientFactory: ClientFactory = new ClientFactory(accountKeyProvider, staging);
+        const challengeHandler: ChallengeHandlerI = new CombinedChallengeHandler(this.options.handlers);
+
+        const certGeneratorOptions: CertGeneratorOptions = {
+            termsOfServiceAgreed: this.options.termsOfServiceAgreed,
+            skipChallengeVerification: this.options.skipChallengeVerification,
+        };
+        const certGenerator: CertGenerator = new CertGenerator(clientFactory, challengeHandler, certGeneratorOptions);
         const certStore: CertStoreI = new BasicFSCertStore(
-            this.certFilePathFormat,
-            this.keyFilePathFormat,
-            this.caFilePathFormat
+            this.options.certFilePathFormat,
+            this.options.keyFilePathFormat,
+            this.options.caFilePathFormat
         );
-        const certHandler: CertHandler = new CertHandler(certGenerator, certStore, this.expiryThresholdDays);
+        const certHandler: CertHandler = new CertHandler(certGenerator, certStore, expiryThresholdDays);
 
         return new CertMonitor(certHandler);
     }

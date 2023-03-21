@@ -17,7 +17,7 @@ const clientFactory: ClientFactoryI
 
 // Create certificate generator
 const certGenerator: CertGeneratorI
-    = new CertGeneratorFactory(clientFactory, challengeHandler).create();
+    = new CertGeneratorFactory(clientFactory, challengeHandler, { termsOfServiceAgreed: true }).create();
 
 // Generate certificate for domain, returning the result in a Promise
 certGenerator.generate(

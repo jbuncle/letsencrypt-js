@@ -1,7 +1,8 @@
 import { NginxCertMonitorFactory } from "../";
 
 // Create the certificate monitor
-const certMonitor = new NginxCertMonitorFactory().create(false);
+const termsOfServiceAgreed: boolean = true;
+const certMonitor = new NginxCertMonitorFactory(termsOfServiceAgreed).create(false);
 
 // Initial domains
 certMonitor.set({

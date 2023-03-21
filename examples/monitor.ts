@@ -6,12 +6,14 @@ const webRoot: string = '/usr/share/nginx/html';
 const challengeHandler = new WebRootChallengeHandlerFactory(webRoot).create();
 
 // Create cert monitor instance with a factory
-const certMonitor = new BasicCertMonitorFactory(
-    [challengeHandler],
-    `/etc/nginx/certs/%s.crt`, // Certificate file pattern
-    `/etc/nginx/certs/%s.key`, // Key file pattern 
-    `/etc/nginx/certs/%s.chain.pem`, // CA file Pattern
-    `/etc/letsencrypt/accounts` // Account key path
+const certMonitor = new BasicCertMonitorFactory({
+    handlers: [challengeHandler],
+    certFilePathFormat: `/etc/nginx/certs/%s.crt`, // Certificate file pattern
+    keyFilePathFormat: `/etc/nginx/certs/%s.key`, // Key file pattern 
+    caFilePathFormat: `/etc/nginx/certs/%s.chain.pem`, // CA file Pattern
+    accountKeyDir: `/etc/letsencrypt/accounts`, // Account key keyPath
+    termsOfServiceAgreed: true,
+}
 ).create(false);
 
 // Initial domains

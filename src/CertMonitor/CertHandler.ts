@@ -6,7 +6,7 @@ import { CertHandlerEvent } from "./CertHandlerEvent";
 import { ActionLock } from "./ActionLock";
 
 /**
- * Handle creation of a certificate & key on filesystem.
+ * Handle creation of a certificate and provides the result to a CertStore.
  */
 export class CertHandler {
 
@@ -14,7 +14,7 @@ export class CertHandler {
     /**
      * 
      * @param certGenerator - CertGenerator that fetches the certificate from the certificate authority
-     * @param certStore
+     * @param certStore The object that will handle storing and retrieval of certificates.
      * @param expiryThresholdDays
      */
     public constructor(
@@ -36,6 +36,14 @@ export class CertHandler {
         });
     }
 
+    /**
+     * Performs renewal of first creation of certificate.
+     *
+     * @param commonName The common name of the certificate.
+     * @param accountEmail The "account" the certificate is linked to.
+     *
+     * @returns The "event" that occurred when checking for renewal.
+     */
     private async doRenewal(commonName: string, accountEmail: string): Promise<CertHandlerEvent> {
         await this.certStore.prepare(commonName);
         if (!await this.certStore.hasCert(commonName)) {
@@ -62,6 +70,13 @@ export class CertHandler {
         await this.certStore.store(commonName, result);
     }
 
+    /**
+     * Check whether certificate renewal is required, based on the expiry threshold.
+     *
+     * @param commonName The common name of the certificate.
+     *
+     * @returns True if renewal is required
+     */
     private async renewalRequired(commonName: string): Promise<boolean> {
         const crtPem: Buffer = await this.certStore.getCert(commonName);
         const pemUtility: PemUtility = new PemUtility();

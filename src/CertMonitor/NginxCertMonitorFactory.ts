@@ -34,7 +34,9 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
     private dhparamsPathFormat: string = `/etc/nginx/certs/%s.dhparam.pem`;
 
     public constructor(
-        private readonly expiryThresholdDays: number = 30
+        private readonly termsOfServiceAgreed: boolean,
+        private readonly expiryThresholdDays: number = 30,
+        private readonly skipChallengeVerification: boolean = true
     ) { }
 
     public setAccountKeyDir(accountKeyDir: string): this {
@@ -101,7 +103,10 @@ export class NginxCertMonitorFactory implements CertMonitorFactoryI {
         const accountKeyProvider: AccountKeyProviderI = this.createAccountKeyProvider(this.accountKeyDir);
         const clientFactory: ClientFactoryI = new ClientFactory(accountKeyProvider, staging);
         const challengeHandler: ChallengeHandlerI = new WebRootChallengeHandlerFactory(this.webRoot).create();
-        const certGenerator: CertGenerator = new CertGenerator(clientFactory, challengeHandler);
+        const certGenerator: CertGenerator = new CertGenerator(clientFactory, challengeHandler, {
+            termsOfServiceAgreed: this.termsOfServiceAgreed,
+            skipChallengeVerification: this.skipChallengeVerification,
+        });
 
         const certStore: CertStoreI = new SymlinkFSCertHandler(
             this.certsDir,

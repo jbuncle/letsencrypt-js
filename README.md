@@ -23,7 +23,7 @@ const clientFactory: ClientFactoryI
 
 // Create certificate generator
 const certGenerator: CertGeneratorI
-    = new CertGeneratorFactory(clientFactory, challengeHandler).create();
+    = new CertGeneratorFactory(clientFactory, challengeHandler, { termsOfServiceAgreed: true }).create();
 
 // Generate certificate for domain, returning the result in a Promise
 certGenerator.generate(
@@ -49,12 +49,14 @@ const webRoot: string = '/usr/share/nginx/html';
 const challengeHandler = new WebRootChallengeHandlerFactory(webRoot).create();
 
 // Create cert monitor instance with a factory
-const certMonitor = new BasicCertMonitorFactory(
-    [challengeHandler],
-    `/etc/nginx/certs/%s.crt`, // Certificate file pattern
-    `/etc/nginx/certs/%s.key`, // Key file pattern
-    `/etc/nginx/certs/%s.chain.pem`, // CA file Pattern
-    `/etc/letsencrypt/accounts` // Account key path
+const certMonitor = new BasicCertMonitorFactory({
+    handlers: [challengeHandler],
+    certFilePathFormat: `/etc/nginx/certs/%s.crt`, // Certificate file pattern
+    keyFilePathFormat: `/etc/nginx/certs/%s.key`, // Key file pattern 
+    caFilePathFormat: `/etc/nginx/certs/%s.chain.pem`, // CA file Pattern
+    accountKeyDir: `/etc/letsencrypt/accounts`, // Account key keyPath
+    termsOfServiceAgreed: true,
+}
 ).create(false);
 
 // Initial domains
@@ -70,16 +72,15 @@ certMonitor.set({
     'mydomain.com': 'me@myemail.com',
     'myotherdomain.com': 'me@myemail.com',
 });
+
 ```
 
 Alternatively, you can use the `NginxCertMonitorFactory` to create a certificate monitor with Nginx-compatible defaults:
 
 ```typescript
-
-import { NginxCertMonitorFactory } from "@jbuncle/letsencrypt-js";
-
 // Create the certificate monitor
-const certMonitor = new NginxCertMonitorFactory().create(false);
+const termsOfServiceAgreed: boolean = true;
+const certMonitor = new NginxCertMonitorFactory(termsOfServiceAgreed).create(false);
 
 // Initial domains
 certMonitor.set({
@@ -87,7 +88,7 @@ certMonitor.set({
 });
 
 // Start monitoring
-certMonitor.start(1440);`
+certMonitor.start(1440);
 ```
 
 Note that the above example is specific to Nginx, and an equivalent configuration is needed for other web servers.

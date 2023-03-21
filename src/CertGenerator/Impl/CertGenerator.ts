@@ -1,4 +1,4 @@
-import type { Authorization, ClientAutoOptions } from "acme-client";
+import type { Authorization, Client, ClientAutoOptions } from "acme-client";
 import type { Challenge } from "acme-client/types/rfc8555";
 import { forge } from "acme-client";
 import type { ClientFactoryI } from "../../Client/ClientFactoryI";
@@ -7,6 +7,7 @@ import type { CertResultI } from "../CertResultI";
 import type { CsrOptionsI } from "../CsrOptionsI";
 import type { CertGeneratorI } from "../CertGeneratorI";
 import type { ChallengeHandlerI } from "../../ChallengeHandler";
+import type { CertGeneratorOptions } from "./CertGeneratorOptions";
 
 /**
  * Main class responsible for actually generating a certificate.
@@ -16,6 +17,7 @@ export class CertGenerator implements CertGeneratorI {
     public constructor(
         private readonly clientFactory: ClientFactoryI,
         private readonly challengeHandler: ChallengeHandlerI,
+        private readonly options: CertGeneratorOptions
     ) { }
 
     /**
@@ -29,7 +31,7 @@ export class CertGenerator implements CertGeneratorI {
     ): Promise<CertResultI> {
 
         // Create ACME client
-        const client = await this.clientFactory.create(accountEmail);
+        const client: Client = await this.clientFactory.create(accountEmail);
 
         // Create CSR (Certificate Signing Request)
         const [sslPrivateKey, csr] = await forge.createCsr(csrOptions);
@@ -42,10 +44,10 @@ export class CertGenerator implements CertGeneratorI {
         }
 
         const options: ClientAutoOptions = {
+            ...this.options,
             challengePriority: this.challengeHandler.getTypes(),
             csr,
             email: accountEmail,
-            termsOfServiceAgreed: true,
             challengeCreateFn,
             challengeRemoveFn,
         };

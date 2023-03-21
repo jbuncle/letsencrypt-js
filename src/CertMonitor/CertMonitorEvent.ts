@@ -6,7 +6,7 @@ export enum CertMonitorEvent {
     STARTED = `started`,
     STOPPED = `stopped`,
 
-    START_DOMAIN = `start-updated`,
+    START_DOMAIN = `start-domain`,
     DOMAINS_ADDED = `domains-updated`,
     DOMAINS_REMOVED = `domains-removed`,
 
