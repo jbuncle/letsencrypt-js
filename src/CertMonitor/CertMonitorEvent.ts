@@ -5,4 +5,9 @@ export enum CertMonitorEvent {
     ERROR = `error`,
     STARTED = `started`,
     STOPPED = `stopped`,
+
+    START_DOMAIN = `start-updated`,
+    DOMAINS_ADDED = `domains-updated`,
+    DOMAINS_REMOVED = `domains-removed`,
+
 }

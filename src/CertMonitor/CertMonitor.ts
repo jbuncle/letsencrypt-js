@@ -56,6 +56,9 @@ export class CertMonitor implements CertMonitorI {
                 CertMonitorEvent.SKIPPED,
                 CertMonitorEvent.STARTED,
                 CertMonitorEvent.STOPPED,
+                CertMonitorEvent.START_DOMAIN,
+                CertMonitorEvent.DOMAINS_ADDED,
+                CertMonitorEvent.DOMAINS_REMOVED,
             ];
         }
         for (const event of events) {
@@ -80,7 +83,7 @@ export class CertMonitor implements CertMonitorI {
             const tasks: Generator<Task<boolean>> = this.createTasks();
             return this.taskBatcher.addAndRun(tasks);
         }, ms);
-        this.emit(CertMonitorEvent.STARTED);
+        this.emit(CertMonitorEvent.STARTED, Object.keys(this.domains));
 
         await this.intervalTimeout.run();
     }
@@ -110,14 +113,20 @@ export class CertMonitor implements CertMonitorI {
         const additions: string[] = this.keyDifference(domains, this.domains);
 
         // Remove domains
-        this.remove(removals);
+        if (removals.length > 0) {
+            this.eventEmitter.emit(CertMonitorEvent.DOMAINS_REMOVED, removals);
+            this.remove(removals);
+        }
 
         // Update with all records (overwrite any changed emails)
         this.forObject(domains, (key: string, value: string) => {
             this.domains[key] = value;
         });
 
-        this.notifyAddition(additions);
+        if (additions.length > 0) {
+            this.eventEmitter.emit(CertMonitorEvent.DOMAINS_ADDED, additions);
+            this.notifyAddition(additions);
+        }
     }
 
     private onEvent(event: CertMonitorEvent, callback: (event: CertMonitorEvent, ...args: unknown[]) => void): void {
@@ -168,6 +177,7 @@ export class CertMonitor implements CertMonitorI {
         if (!this.isRunning()) {
             return;
         }
+        
         const task: Generator<Task<boolean>> = this.createTasks(...names);
         void this.taskBatcher.addAndRun(task).finally();
     }
@@ -197,6 +207,8 @@ export class CertMonitor implements CertMonitorI {
         return async (): Promise<boolean> => {
             // Handle exceptions
             try {
+                this.emit(CertMonitorEvent.START_DOMAIN, domainName, accountEmail);
+
                 const result: CertHandlerEvent = await this.certHandler.generateOrRenewCertificate(domainName, accountEmail);
                 switch (result) {
                     case CertHandlerEvent.CREATED:
