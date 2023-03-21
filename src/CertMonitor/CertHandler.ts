@@ -45,7 +45,7 @@ export class CertHandler {
             return CertHandlerEvent.CREATED;
 
         }
-        if (!await this.renewalRequired(commonName)) {
+        if (await this.renewalRequired(commonName)) {
             // Renew
             await this.generateCertificate(commonName, accountEmail);
 
